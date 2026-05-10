@@ -1,677 +1,508 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dino Runner+ - Ultimate Edition</title>
-    <style>
-        :root {
-            --bg-primary: #0f0c29;
-            --bg-secondary: #302b63;
-            --bg-tertiary: #24243e;
-            --accent-gold: #ffd700;
-            --accent-red: #ff6b6b;
-            --accent-blue: #4fc3f7;
-            --accent-green: #4caf50;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0c0;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --button-gradient: linear-gradient(135deg, #ff6b6b, #ff8e53);
-            --button-hover: linear-gradient(135deg, #ff8e53, #ff6b6b);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-            --shadow-glow: 0 0 40px rgba(255, 107, 107, 0.3);
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            --font-heading: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Dino Runner+ 🦕</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --sky-day:#87CEEB;--sky-night:#1a1a2e;--ground:#c8a96e;
+    --ui-bg:rgba(255,255,255,0.95);--ui-border:rgba(0,0,0,0.1);
+    --accent:#e85d04;--accent2:#f9c74f;--danger:#e63946;
+    --success:#2dc653;--text:#1a1a2e;--text-light:#fff;
+    --font-main:'Courier New',monospace;
+  }
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--font-main);}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  #gameWrapper{
+    width:100vw;height:100vh;position:relative;overflow:hidden;
+    background:var(--sky-day);transition:background 2s;
+  }
+  #gameCanvas{display:block;width:100%;height:100%;}
 
-        body {
-            font-family: var(--font-body);
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
-            position: relative;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+  /* ─── SCREENS ─── */
+  .screen{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;z-index:50;
+    transition:opacity .4s,transform .4s;
+  }
+  .screen.hidden{opacity:0;pointer-events:none;transform:scale(1.04);}
 
-        .bg-particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
+  /* ─── MENU ─── */
+  #menuScreen{background:linear-gradient(160deg,#0f3460 0%,#16213e 40%,#1a1a2e 100%);}
+  .menu-stars{position:absolute;inset:0;overflow:hidden;z-index:0;}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 2s infinite alternate;}
+  @keyframes twinkle{0%{opacity:.2;}100%{opacity:1;}}
 
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            animation: floatUp linear infinite;
-            opacity: 0;
-        }
+  .menu-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:clamp(12px,2vh,24px);}
 
-        @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 0.8; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-        }
+  .game-logo{
+    font-size:clamp(2.5rem,8vw,5rem);font-weight:900;letter-spacing:-2px;
+    background:linear-gradient(135deg,#f9c74f,#f8961e,#f3722c,#e85d04);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 4px 12px rgba(232,93,4,.5));
+    animation:logoBounce 2s ease-in-out infinite;
+    font-family:'Impact',sans-serif;
+  }
+  @keyframes logoBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
+  .logo-sub{color:#9ca3af;font-size:clamp(.75rem,2vw,1rem);letter-spacing:4px;text-transform:uppercase;margin-top:-8px;}
 
-        @keyframes slideInFromBottom {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+  /* Canvas dino preview in menu */
+  #menuDinoCanvas{width:clamp(120px,20vw,200px);height:80px;}
 
-        @keyframes slideInFromLeft {
-            from { transform: translateX(-50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+  .menu-btns{display:flex;flex-direction:column;gap:10px;width:min(320px,85vw);}
+  .btn{
+    padding:clamp(10px,2vh,16px) 24px;border:none;border-radius:12px;
+    font-size:clamp(.85rem,2.5vw,1.05rem);font-weight:700;cursor:pointer;
+    letter-spacing:1px;transition:transform .12s,box-shadow .12s,filter .12s;
+    font-family:var(--font-main);text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:hover{transform:translateY(-2px) scale(1.02);filter:brightness(1.1);}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,#f9c74f,#f3722c);color:#1a1a2e;box-shadow:0 6px 20px rgba(249,199,79,.3);}
+  .btn-secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);}
+  .btn-danger{background:linear-gradient(135deg,#e63946,#c1121f);color:#fff;box-shadow:0 6px 20px rgba(230,57,70,.3);}
+  .btn-success{background:linear-gradient(135deg,#2dc653,#2a9134);color:#fff;box-shadow:0 6px 20px rgba(45,198,83,.3);}
+  .btn-online{background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;box-shadow:0 6px 20px rgba(67,97,238,.4);}
+  .btn-sm{padding:8px 16px;font-size:.8rem;border-radius:8px;}
 
-        @keyframes slideInFromRight {
-            from { transform: translateX(50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+  /* ─── PANELS (sub-screens within menu) ─── */
+  .panel{
+    position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+    transition:opacity .3s;
+  }
+  .panel.hidden{opacity:0;pointer-events:none;}
+  .panel-box{
+    background:#16213e;border:1px solid rgba(255,255,255,.15);border-radius:20px;
+    padding:clamp(16px,3vw,32px);width:min(480px,92vw);max-height:90vh;
+    overflow-y:auto;position:relative;
+    box-shadow:0 24px 64px rgba(0,0,0,.6);
+  }
+  .panel-title{font-size:1.4rem;font-weight:900;color:#f9c74f;margin-bottom:20px;text-align:center;letter-spacing:2px;}
+  .panel-close{
+    position:absolute;top:16px;right:16px;background:rgba(255,255,255,.1);
+    border:none;color:#fff;width:32px;height:32px;border-radius:8px;
+    font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .panel-close:hover{background:rgba(255,255,255,.2);}
 
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(255, 215, 0, 0.3); }
-        }
+  /* ─── ROOM / ONLINE ─── */
+  .room-input{
+    width:100%;padding:12px 16px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.2);border-radius:10px;
+    color:#fff;font-size:1rem;font-family:var(--font-main);
+    outline:none;margin-bottom:10px;
+  }
+  .room-input:focus{border-color:#4361ee;background:rgba(67,97,238,.1);}
+  .room-code-display{
+    background:rgba(249,199,79,.1);border:2px dashed #f9c74f;
+    border-radius:12px;padding:16px;text-align:center;margin:12px 0;
+  }
+  .room-code{font-size:2.5rem;font-weight:900;color:#f9c74f;letter-spacing:8px;}
+  .room-players{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+  .room-player{
+    display:flex;align-items:center;gap:10px;padding:10px 14px;
+    background:rgba(255,255,255,.06);border-radius:10px;color:#fff;
+    border:1px solid rgba(255,255,255,.1);
+  }
+  .player-dot{width:10px;height:10px;border-radius:50%;background:#2dc653;flex-shrink:0;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .player-host-badge{font-size:.65rem;background:#f9c74f;color:#1a1a2e;padding:2px 6px;border-radius:4px;font-weight:700;}
 
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
+  /* ─── HUD (in-game) ─── */
+  #hud{
+    position:absolute;top:0;left:0;right:0;z-index:30;
+    display:flex;align-items:flex-start;justify-content:space-between;
+    padding:clamp(8px,2vh,16px) clamp(12px,3vw,24px);
+    pointer-events:none;
+  }
+  .hud-score{
+    background:rgba(0,0,0,.4);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.2);border-radius:12px;
+    padding:8px 16px;color:#fff;font-size:clamp(.85rem,2.5vw,1.1rem);font-weight:700;
+  }
+  .hud-score span{color:#f9c74f;}
+  #powerupBar{
+    position:absolute;bottom:clamp(80px,15vh,120px);left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;z-index:30;pointer-events:none;
+  }
+  .powerup-icon{
+    width:44px;height:44px;border-radius:10px;
+    background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.3);
+    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    position:relative;overflow:hidden;
+  }
+  .powerup-timer{
+    position:absolute;bottom:0;left:0;right:0;height:3px;
+    background:#f9c74f;transform-origin:left;
+  }
 
-        .main-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-        }
+  /* ─── ONLINE SCOREBOARD ─── */
+  #onlineBoard{
+    position:absolute;top:clamp(8px,2vh,16px);right:clamp(12px,3vw,24px);
+    z-index:31;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.15);border-radius:14px;
+    padding:10px 14px;min-width:160px;pointer-events:none;
+    transition:opacity .3s;
+  }
+  #onlineBoard.hidden{opacity:0;}
+  .ob-title{font-size:.65rem;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;margin-bottom:8px;}
+  .ob-row{display:flex;align-items:center;gap:8px;padding:4px 0;color:#fff;font-size:.8rem;}
+  .ob-rank{width:18px;color:#9ca3af;font-size:.7rem;}
+  .ob-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ob-score{color:#f9c74f;font-weight:700;}
+  .ob-dead{opacity:.4;text-decoration:line-through;}
 
-        .header {
-            text-align: center;
-            animation: slideInFromBottom 0.8s ease-out;
-        }
+  /* ─── EVENT BANNER ─── */
+  #eventBanner{
+    position:absolute;top:clamp(60px,10vh,90px);left:50%;transform:translateX(-50%);
+    z-index:40;background:linear-gradient(135deg,#f9c74f,#f3722c);
+    color:#1a1a2e;padding:8px 24px;border-radius:50px;font-weight:900;
+    font-size:clamp(.8rem,2.5vw,1rem);letter-spacing:1px;white-space:nowrap;
+    box-shadow:0 8px 24px rgba(249,199,79,.4);
+    animation:bannerIn .3s ease;opacity:0;transition:opacity .4s;pointer-events:none;
+  }
+  #eventBanner.show{opacity:1;}
+  @keyframes bannerIn{from{transform:translateX(-50%) scale(.8);}to{transform:translateX(-50%) scale(1);}}
 
-        .logo-icon {
-            font-size: 80px;
-            display: block;
-            animation: pulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
-        }
+  /* ─── AI SPEECH BUBBLE ─── */
+  #aiBubble{
+    position:absolute;z-index:35;background:#fff;color:#1a1a2e;
+    padding:6px 12px;border-radius:12px;font-size:.75rem;font-weight:700;
+    pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+  }
+  #aiBubble::after{
+    content:'';position:absolute;bottom:-6px;left:12px;
+    border:6px solid transparent;border-top-color:#fff;border-bottom:0;
+  }
+  #aiBubble.show{opacity:1;}
 
-        .game-title {
-            font-family: var(--font-heading);
-            font-size: clamp(32px, 6vw, 52px);
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-red), var(--accent-gold));
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientShift 3s ease-in-out infinite;
-            letter-spacing: -1px;
-        }
+  /* ─── GAME OVER SCREEN ─── */
+  #gameoverScreen{background:rgba(10,10,20,.92);backdrop-filter:blur(12px);}
+  .gameover-box{
+    background:#16213e;border:1px solid rgba(255,255,255,.15);border-radius:24px;
+    padding:clamp(20px,4vw,40px);text-align:center;width:min(400px,90vw);
+    box-shadow:0 32px 80px rgba(0,0,0,.6);
+  }
+  .gameover-dino{font-size:4rem;animation:dinoSpin 1s ease-out;}
+  @keyframes dinoSpin{from{transform:rotate(0deg) scale(0);}to{transform:rotate(360deg) scale(1);}}
+  .gameover-title{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:900;color:#e63946;margin:8px 0;font-family:'Impact',sans-serif;}
+  .gameover-scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+  .score-card{background:rgba(255,255,255,.06);border-radius:12px;padding:12px;}
+  .score-label{font-size:.7rem;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;}
+  .score-value{font-size:1.6rem;font-weight:900;color:#f9c74f;}
+  .funny-msg{color:#9ca3af;font-size:.85rem;font-style:italic;margin:8px 0 16px;}
 
-        .game-subtitle {
-            font-size: clamp(12px, 2vw, 16px);
-            color: var(--text-secondary);
-            font-weight: 400;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 8px;
-        }
+  /* ─── UPGRADES PANEL ─── */
+  .upgrade-grid{display:flex;flex-direction:column;gap:10px;}
+  .upgrade-item{
+    display:flex;align-items:center;gap:12px;padding:12px;
+    background:rgba(255,255,255,.06);border-radius:12px;border:1px solid rgba(255,255,255,.1);
+  }
+  .upgrade-icon{font-size:1.6rem;flex-shrink:0;}
+  .upgrade-info{flex:1;}
+  .upgrade-name{color:#fff;font-weight:700;font-size:.9rem;}
+  .upgrade-desc{color:#9ca3af;font-size:.75rem;margin-top:2px;}
+  .upgrade-level{display:flex;gap:4px;margin-top:4px;}
+  .upgrade-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);}
+  .upgrade-dot.filled{background:#f9c74f;}
+  .upgrade-buy{
+    padding:8px 14px;background:linear-gradient(135deg,#f9c74f,#f3722c);
+    border:none;border-radius:8px;color:#1a1a2e;font-weight:700;
+    font-size:.8rem;cursor:pointer;white-space:nowrap;font-family:var(--font-main);
+  }
+  .upgrade-buy:disabled{background:rgba(255,255,255,.1);color:#9ca3af;cursor:not-allowed;}
+  .bones-count{
+    display:flex;align-items:center;gap:6px;color:#f9c74f;
+    font-size:1rem;font-weight:700;margin-bottom:14px;
+  }
 
-        /* Menu Grid */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 900px;
-        }
+  /* ─── SKINS PANEL ─── */
+  .skins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .skin-card{
+    background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);
+    border-radius:14px;padding:10px;text-align:center;cursor:pointer;
+    transition:border-color .2s,background .2s;
+  }
+  .skin-card.unlocked{border-color:#f9c74f;background:rgba(249,199,79,.08);}
+  .skin-card.active{border-color:#2dc653;background:rgba(45,198,83,.1);}
+  .skin-canvas{width:60px;height:50px;margin:0 auto;}
+  .skin-name{color:#fff;font-size:.7rem;font-weight:700;margin-top:4px;}
+  .skin-status{font-size:.6rem;color:#9ca3af;margin-top:2px;}
 
-        .menu-item {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 25px 20px;
-            text-align: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-            color: var(--text-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+  /* ─── LEADERBOARD ─── */
+  .lb-row{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;
+    border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .lb-rank{width:24px;font-size:.9rem;font-weight:700;}
+  .lb-rank-1{color:#f9c74f;}
+  .lb-rank-2{color:#9ca3af;}
+  .lb-rank-3{color:#cd7c32;}
+  .lb-name{flex:1;color:#fff;font-size:.85rem;}
+  .lb-score{color:#f9c74f;font-weight:700;font-size:.9rem;}
+  .lb-date{color:#6b7280;font-size:.7rem;}
 
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transition: left 0.5s ease;
-        }
+  /* ─── TOUCH CONTROLS ─── */
+  #touchControls{
+    position:absolute;bottom:0;left:0;right:0;height:clamp(80px,18vh,130px);
+    display:none;align-items:center;justify-content:space-between;
+    padding:0 clamp(16px,5vw,40px);z-index:30;pointer-events:none;
+  }
+  .touch-btn{
+    width:clamp(60px,15vw,80px);height:clamp(60px,15vw,80px);
+    border-radius:50%;background:rgba(255,255,255,.15);
+    border:2px solid rgba(255,255,255,.3);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.8rem;pointer-events:all;cursor:pointer;
+    user-select:none;-webkit-user-select:none;
+    transition:background .1s,transform .1s;
+    touch-action:manipulation;
+  }
+  .touch-btn:active{background:rgba(255,255,255,.35);transform:scale(.9);}
+  @media(max-width:768px){
+    #touchControls{display:flex;}
+    #touchJump{position:absolute;inset:0;width:100%;height:100%;border-radius:0;background:transparent;border:none;z-index:29;pointer-events:all;}
+  }
 
-        .menu-item:hover::before {
-            left: 100%;
-        }
+  /* ─── LOADING ─── */
+  #loadingScreen{background:#0f3460;z-index:200;}
+  .loading-bar-wrap{width:min(300px,80vw);background:rgba(255,255,255,.1);border-radius:50px;height:8px;overflow:hidden;margin-top:16px;}
+  .loading-bar{height:100%;background:linear-gradient(90deg,#f9c74f,#f3722c);border-radius:50px;transition:width .3s;}
+  .loading-text{color:#9ca3af;font-size:.85rem;margin-top:12px;}
 
-        .menu-item:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-gold);
-            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.15);
-        }
+  /* ─── MISC ─── */
+  .divider{width:100%;height:1px;background:rgba(255,255,255,.1);margin:10px 0;}
+  .text-muted{color:#9ca3af;font-size:.8rem;}
+  .text-center{text-align:center;}
+  .flex-row{display:flex;gap:10px;align-items:center;}
+  .flex-col{display:flex;flex-direction:column;gap:8px;}
+  hr.fancy{border:none;border-top:1px dashed rgba(255,255,255,.15);margin:12px 0;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#1a1a2e;border:1px solid rgba(255,255,255,.2);
+    color:#fff;padding:10px 20px;border-radius:50px;font-size:.85rem;
+    z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;}
 
-        .menu-item:active {
-            transform: scale(0.95);
-            transition: all 0.1s ease;
-        }
-
-        .menu-item:nth-child(1) { animation: slideInFromLeft 0.8s ease-out; }
-        .menu-item:nth-child(2) { animation: slideInFromBottom 0.8s ease-out 0.15s backwards; }
-        .menu-item:nth-child(3) { animation: slideInFromRight 0.8s ease-out 0.3s backwards; }
-        .menu-item:nth-child(4) { animation: slideInFromLeft 0.8s ease-out 0.45s backwards; }
-        .menu-item:nth-child(5) { animation: slideInFromBottom 0.8s ease-out 0.6s backwards; }
-        .menu-item:nth-child(6) { animation: slideInFromRight 0.8s ease-out 0.75s backwards; }
-
-        .menu-icon {
-            font-size: 48px;
-            display: block;
-        }
-
-        .menu-label {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .menu-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        .menu-highlight {
-            border-color: var(--accent-gold);
-            box-shadow: var(--shadow-glow);
-            animation: glowPulse 2s ease-in-out infinite;
-        }
-
-        .menu-highlight .menu-label {
-            color: var(--accent-gold);
-        }
-
-        /* Room code input */
-        .room-input-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .room-input-container.active {
-            display: flex;
-        }
-
-        .room-input-box {
-            background: var(--card-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            backdrop-filter: blur(20px);
-            animation: slideInFromBottom 0.3s ease;
-        }
-
-        .room-input-box h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-        }
-
-        .room-input-box input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid var(--glass-border);
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            outline: none;
-            transition: var(--transition-smooth);
-            margin-bottom: 15px;
-        }
-
-        .room-input-box input:focus {
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .room-input-box button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin: 5px;
-            transition: var(--transition-smooth);
-        }
-
-        .btn-join {
-            background: linear-gradient(135deg, #4caf50, #66bb6a);
-            color: #fff;
-        }
-
-        .btn-join:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
-        }
-
-        .btn-cancel {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-box {
-            background: rgba(20, 20, 40, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            color: #fff;
-            max-width: 400px;
-            width: 90%;
-            animation: slideInFromBottom 0.3s ease;
-        }
-
-        .modal-box h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-red));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .modal-box button {
-            background: linear-gradient(135deg, var(--accent-red), #ff8e53);
-            border: none;
-            color: #fff;
-            padding: 12px 30px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-
-        .modal-box button:hover {
-            transform: scale(1.05);
-        }
-
-        /* Stats */
-        .stats-bar {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: slideInFromBottom 0.8s ease-out 0.8s backwards;
-        }
-
-        .stat-item {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 12px 22px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: var(--transition-smooth);
-        }
-
-        .stat-item:hover {
-            border-color: var(--accent-gold);
-            transform: scale(1.05);
-        }
-
-        .stat-value {
-            color: var(--accent-gold);
-            font-size: 24px;
-            font-weight: 800;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .footer-text {
-            color: var(--text-secondary);
-            font-size: 11px;
-            text-align: center;
-            animation: slideInFromBottom 0.8s ease-out 1s backwards;
-        }
-
-        @media (max-width: 768px) {
-            .main-container { gap: 20px; padding: 15px; }
-            .logo-icon { font-size: 60px; }
-            .menu-grid { grid-template-columns: 1fr; gap: 10px; }
-            .menu-item { padding: 18px 15px; }
-            .stats-bar { gap: 10px; }
-            .stat-item { padding: 10px 18px; }
-        }
-
-        @media (max-width: 480px) {
-            .game-title { font-size: 28px; }
-            .logo-icon { font-size: 45px; }
-        }
-    </style>
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
+</style>
 </head>
 <body>
-    <div class="bg-particles" id="particles"></div>
 
-    <div class="main-container">
-        <div class="header">
-            <span class="logo-icon">🦖</span>
-            <h1 class="game-title">DINO RUNNER+</h1>
-            <p class="game-subtitle">Ultimate Edition • Run, Fly, Survive</p>
-        </div>
+<!-- ══════════ WRAPPER ══════════ -->
+<div id="gameWrapper">
+  <canvas id="gameCanvas"></canvas>
 
-        <div class="menu-grid">
-            <div class="menu-item menu-highlight" onclick="startGame('single')">
-                <span class="menu-icon">▶️</span>
-                <span class="menu-label">PLAY SOLO</span>
-                <span class="menu-desc">Start a single player game with jetpack powerups and parachute respawn</span>
-            </div>
+  <!-- ── LOADING ── -->
+  <div class="screen" id="loadingScreen">
+    <div style="font-size:4rem;animation:logoBounce 1s infinite">🦕</div>
+    <div class="game-logo" style="font-size:2rem;margin-top:8px">DINO RUNNER+</div>
+    <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar" style="width:0%"></div></div>
+    <div class="loading-text" id="loadingText">Waking up the dinosaur...</div>
+  </div>
 
-            <div class="menu-item" onclick="createRoom()">
-                <span class="menu-icon">🏠</span>
-                <span class="menu-label">CREATE ROOM</span>
-                <span class="menu-desc">Host an online game and share the room code with friends</span>
-            </div>
-
-            <div class="menu-item" onclick="showJoinRoom()">
-                <span class="menu-icon">🔗</span>
-                <span class="menu-label">JOIN ROOM</span>
-                <span class="menu-desc">Enter a room code to join your friend's game</span>
-            </div>
-
-            <div class="menu-item" onclick="openUpgrades()">
-                <span class="menu-icon">⬆️</span>
-                <span class="menu-label">UPGRADES</span>
-                <span class="menu-desc">Spend coins to upgrade speed, jump, and abilities</span>
-            </div>
-
-            <div class="menu-item" onclick="openCharacters()">
-                <span class="menu-icon">🎭</span>
-                <span class="menu-label">CHARACTERS</span>
-                <span class="menu-desc">Unlock and choose from 8 funny animal characters</span>
-            </div>
-
-            <div class="menu-item" onclick="openLeaderboard()">
-                <span class="menu-icon">🏆</span>
-                <span class="menu-label">LEADERBOARD</span>
-                <span class="menu-desc">View top scores from players around the world</span>
-            </div>
-        </div>
-
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-value" id="highScore">0</div>
-                <div class="stat-label">High Score</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="coins">0</div>
-                <div class="stat-label">Coins</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="charsUnlocked">1</div>
-                <div class="stat-label">Characters</div>
-            </div>
-        </div>
-
-        <p class="footer-text">Press SPACE or Tap to Jump • Collect 🚀 Jetpacks to Fly • Die & Respawn with Parachute</p>
+  <!-- ── MAIN MENU ── -->
+  <div class="screen hidden" id="menuScreen">
+    <div class="menu-stars" id="menuStars"></div>
+    <div class="menu-content">
+      <div class="game-logo">🦕 DINO+</div>
+      <div class="logo-sub">The Upgraded Extinction</div>
+      <canvas id="menuDinoCanvas" width="200" height="80"></canvas>
+      <div class="menu-btns">
+        <button class="btn btn-primary" onclick="startGame('solo')">▶ Play Solo</button>
+        <button class="btn btn-online" onclick="showPanel('onlinePanel')">🌐 Online Multiplayer</button>
+        <button class="btn btn-secondary" onclick="showPanel('upgradesPanel')">⚡ Upgrades <span id="menuBones" style="color:#f9c74f;margin-left:4px"></span></button>
+        <button class="btn btn-secondary" onclick="showPanel('skinsPanel')">🎨 Skins</button>
+        <button class="btn btn-secondary" onclick="showPanel('leaderboardPanel')">🏆 Leaderboard</button>
+        <button class="btn btn-secondary" onclick="toggleMusic()">🎵 <span id="musicBtnText">Music: ON</span></button>
+      </div>
+      <div class="text-muted" style="margin-top:8px">v1.0 · Built with 🦴 and chaos</div>
     </div>
+  </div>
 
-    <!-- Room Code Input -->
-    <div class="room-input-container" id="roomInput">
-        <div class="room-input-box">
-            <h3>🔗 Enter Room Code</h3>
-            <input type="text" id="roomCode" placeholder="ABC123" maxlength="6" autocomplete="off">
-            <br>
-            <button class="btn-join" onclick="joinRoom()">Join Room</button>
-            <button class="btn-cancel" onclick="hideJoinRoom()">Cancel</button>
+  <!-- ── HUD ── -->
+  <div id="hud" class="hidden">
+    <div class="hud-score">🦴 <span id="bonesHud">0</span></div>
+    <div class="hud-score">SCORE <span id="scoreHud">0</span></div>
+    <div class="hud-score">BEST <span id="bestHud">0</span></div>
+  </div>
+
+  <!-- ── ONLINE SCOREBOARD ── -->
+  <div id="onlineBoard" class="hidden">
+    <div class="ob-title">🌐 Online</div>
+    <div id="obRows"></div>
+  </div>
+
+  <!-- ── EVENT BANNER ── -->
+  <div id="eventBanner"></div>
+
+  <!-- ── AI SPEECH BUBBLE ── -->
+  <div id="aiBubble"></div>
+
+  <!-- ── POWERUP BAR ── -->
+  <div id="powerupBar"></div>
+
+  <!-- ── TOUCH CONTROLS ── -->
+  <div id="touchControls">
+    <div class="touch-btn" id="touchDuck" ontouchstart="onDuck(true)" ontouchend="onDuck(false)">⬇️</div>
+    <div style="flex:1"></div>
+    <div class="touch-btn" id="touchJumpBtn" ontouchstart="onJump()">⬆️</div>
+  </div>
+  <div id="touchJump" ontouchstart="onJump()"></div>
+
+  <!-- ── GAME OVER ── -->
+  <div class="screen hidden" id="gameoverScreen">
+    <div class="gameover-box">
+      <div class="gameover-dino" id="gameoverEmoji">💀</div>
+      <div class="gameover-title">GAME OVER</div>
+      <div class="funny-msg" id="funnyMsg"></div>
+      <div class="gameover-scores">
+        <div class="score-card">
+          <div class="score-label">Score</div>
+          <div class="score-value" id="goScore">0</div>
         </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal-box">
-            <h3 id="modal-title">Notice</h3>
-            <p id="modal-message"></p>
-            <button onclick="closeModal()">OK</button>
+        <div class="score-card">
+          <div class="score-label">Best</div>
+          <div class="score-value" id="goBest">0</div>
         </div>
+        <div class="score-card">
+          <div class="score-label">Bones</div>
+          <div class="score-value" id="goBones">0</div>
+        </div>
+        <div class="score-card">
+          <div class="score-label">Distance</div>
+          <div class="score-value" id="goDist">0m</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="restartGame()">🔄 Play Again</button>
+        <button class="btn btn-secondary" onclick="goMenu()">🏠 Menu</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // ═══════════════════════════════════════════
-        // BACKGROUND PARTICLES
-        // ═══════════════════════════════════════════
-        (function createParticles() {
-            const container = document.getElementById('particles');
-            const colors = ['#ffd700', '#ff6b6b', '#4fc3f7', '#ff8e53', '#4caf50', '#ce93d8'];
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = (Math.random() * 8 + 2) + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.animationDuration = (Math.random() * 15 + 8) + 's';
-                particle.style.animationDelay = (Math.random() * 10) + 's';
-                container.appendChild(particle);
-            }
-        })();
+  <!-- ══════════ PANELS ══════════ -->
 
-        // ═══════════════════════════════════════════
-        // LOAD STATS
-        // ═══════════════════════════════════════════
-        function loadStats() {
-            try {
-                const saved = JSON.parse(localStorage.getItem('dinoRunnerUltimate') || '{}');
-                document.getElementById('highScore').textContent = saved.highScore || 0;
-                document.getElementById('coins').textContent = saved.coins || 0;
-                const chars = saved.charUnlocks || { dino: true, cat: true, dog: true, penguin: true };
-                document.getElementById('charsUnlocked').textContent = Object.keys(chars).length;
-            } catch (e) {
-                document.getElementById('highScore').textContent = '0';
-                document.getElementById('coins').textContent = '0';
-                document.getElementById('charsUnlocked').textContent = '4';
-            }
-        }
-        loadStats();
+  <!-- ONLINE PANEL -->
+  <div class="panel hidden" id="onlinePanel">
+    <div class="panel-box">
+      <div class="panel-title">🌐 Online Multiplayer</div>
+      <button class="panel-close" onclick="hidePanel('onlinePanel')">✕</button>
+      <div id="onlinePanelContent">
+        <div class="flex-col">
+          <input class="room-input" id="playerNameInput" placeholder="Your name (e.g. DinoKing99)" maxlength="16">
+          <div class="flex-row">
+            <button class="btn btn-success" style="flex:1" onclick="createRoom()">➕ Create Room</button>
+          </div>
+          <hr class="fancy">
+          <input class="room-input" id="joinCodeInput" placeholder="Room Code (e.g. DINO42)" maxlength="8" style="text-transform:uppercase;letter-spacing:4px">
+          <button class="btn btn-online" onclick="joinRoom()">🚀 Join Room</button>
+        </div>
+        <div id="roomStatus" style="margin-top:10px"></div>
+      </div>
+      <!-- Room lobby (shown after create/join) -->
+      <div id="roomLobby" class="hidden">
+        <div class="room-code-display">
+          <div style="color:#9ca3af;font-size:.75rem;letter-spacing:2px;margin-bottom:4px">ROOM CODE</div>
+          <div class="room-code" id="roomCodeDisplay">----</div>
+          <button class="btn btn-sm btn-secondary" style="margin-top:8px" onclick="copyRoomCode()">📋 Copy Code</button>
+        </div>
+        <div style="color:#9ca3af;font-size:.8rem;margin:8px 0 4px">Players in room:</div>
+        <div class="room-players" id="roomPlayersList"></div>
+        <div id="lobbyActions" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+          <div id="hostActions" class="hidden">
+            <button class="btn btn-primary" id="startOnlineBtn" onclick="startOnlineGame()" style="width:100%" disabled>
+              ⏳ Waiting for players...
+            </button>
+          </div>
+          <div id="guestWaiting" class="hidden">
+            <div class="text-muted text-center">Waiting for host to start...</div>
+          </div>
+          <button class="btn btn-danger" onclick="leaveRoom()">🚪 Leave Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // ═══════════════════════════════════════════
-        // GAME LAUNCH
-        // ═══════════════════════════════════════════
-        function startGame(mode) {
-            localStorage.setItem('dinoGameMode', mode);
-            window.location.href = 'game.html';
-        }
+  <!-- UPGRADES PANEL -->
+  <div class="panel hidden" id="upgradesPanel">
+    <div class="panel-box">
+      <div class="panel-title">⚡ Upgrades</div>
+      <button class="panel-close" onclick="hidePanel('upgradesPanel')">✕</button>
+      <div class="bones-count">🦴 <span id="bonesDisplay">0</span> bones available</div>
+      <div class="upgrade-grid" id="upgradeGrid"></div>
+    </div>
+  </div>
 
-        // ═══════════════════════════════════════════
-        // ROOM SYSTEM
-        // ═══════════════════════════════════════════
-        function createRoom() {
-            // Generate random room code
-            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            // Store room info
-            localStorage.setItem('dinoRoomCode', code);
-            localStorage.setItem('dinoRoomHost', 'true');
-            localStorage.setItem('dinoGameMode', 'online');
-            
-            // Show the code to user
-            showModal('Room Created! 🏠', 
-                `Your room code is: <b style="font-size:24px;letter-spacing:4px;">${code}</b><br><br>
-                Share this code with friends to join.<br>
-                Starting game now...`);
-            
-            // Navigate to game after short delay
-            setTimeout(() => {
-                window.location.href = 'game.html';
-            }, 2000);
-        }
+  <!-- SKINS PANEL -->
+  <div class="panel hidden" id="skinsPanel">
+    <div class="panel-box">
+      <div class="panel-title">🎨 Skins</div>
+      <button class="panel-close" onclick="hidePanel('skinsPanel')">✕</button>
+      <div class="skins-grid" id="skinsGrid"></div>
+    </div>
+  </div>
 
-        function showJoinRoom() {
-            document.getElementById('roomInput').classList.add('active');
-            document.getElementById('roomCode').focus();
-        }
+  <!-- LEADERBOARD PANEL -->
+  <div class="panel hidden" id="leaderboardPanel">
+    <div class="panel-box">
+      <div class="panel-title">🏆 Leaderboard</div>
+      <button class="panel-close" onclick="hidePanel('leaderboardPanel')">✕</button>
+      <div id="leaderboardList"></div>
+    </div>
+  </div>
 
-        function hideJoinRoom() {
-            document.getElementById('roomInput').classList.remove('active');
-        }
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+</div>
 
-        function joinRoom() {
-            const code = document.getElementById('roomCode').value.trim().toUpperCase();
-            if (code.length < 3) {
-                showModal('Invalid Code', 'Please enter a valid room code (at least 3 characters).');
-                return;
-            }
-            
-            localStorage.setItem('dinoRoomCode', code);
-            localStorage.setItem('dinoRoomHost', 'false');
-            localStorage.setItem('dinoGameMode', 'online');
-            
-            hideJoinRoom();
-            window.location.href = 'game.html';
-        }
+<!-- ══════════ FIREBASE ══════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, off, remove, push, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // Enter key to join
-        document.getElementById('roomCode')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinRoom();
-        });
+const firebaseConfig = {
+  apiKey: "AIzaSyBaNjHmi-VlW8aFDDVN38OJkQCShYY2sFg",
+  authDomain: "dominos-ftw.firebaseapp.com",
+  databaseURL: "https://dominos-ftw-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "dominos-ftw",
+  storageBucket: "dominos-ftw.firebasestorage.app",
+  messagingSenderId: "476741872461",
+  appId: "1:476741872461:web:3dc979b05a6175eadda504",
+  measurementId: "G-1TBL91595F"
+};
 
-        // ═══════════════════════════════════════════
-        // MODAL
-        // ═══════════════════════════════════════════
-        function showModal(title, message) {
-            document.getElementById('modal-title').innerHTML = title;
-            document.getElementById('modal-message').innerHTML = message;
-            document.getElementById('modal').classList.add('active');
-        }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._db = db;
+window._fbRef = ref;
+window._fbSet = set;
+window._fbGet = get;
+window._fbUpdate = update;
+window._fbOnValue = onValue;
+window._fbOff = off;
+window._fbRemove = remove;
+window._fbPush = push;
+window._fbServerTimestamp = serverTimestamp;
+window._fbReady = true;
+console.log("Firebase ready ✅");
+</script>
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        // ═══════════════════════════════════════════
-        // MENU PAGES (Placeholder - will load in game.html)
-        // ═══════════════════════════════════════════
-        function openUpgrades() {
-            localStorage.setItem('dinoMenuPage', 'upgrades');
-            window.location.href = 'game.html';
-        }
-
-        function openCharacters() {
-            localStorage.setItem('dinoMenuPage', 'characters');
-            window.location.href = 'game.html';
-        }
-
-        function openLeaderboard() {
-            localStorage.setItem('dinoMenuPage', 'leaderboard');
-            window.location.href = 'game.html';
-        }
-
-        // ═══════════════════════════════════════════
-        // AUDIO WARMUP
-        // ═══════════════════════════════════════════
-        document.addEventListener('click', function warmupAudio() {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                const tempCtx = new AudioContext();
-                const osc = tempCtx.createOscillator();
-                const gain = tempCtx.createGain();
-                gain.gain.value = 0.001;
-                osc.connect(gain);
-                gain.connect(tempCtx.destination);
-                osc.start(0);
-                osc.stop(0.001);
-                tempCtx.close();
-            } catch (e) {}
-        }, { once: true });
-    </script>
+<!-- ══════════ GAME SCRIPT ══════════ -->
+<script src="game.js"></script>
 </body>
 </html>
