@@ -295,10 +295,12 @@ const MUSIC_LIBRARY = [
   { name:'Sunrise Sprint ☀️',    style:'Morning',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3' },
   { name:'Turbo Dino 🚀',        style:'Turbo',    url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3' },
   { name:'Mystery Jungle 🌴',    style:'Mystery',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3' },
-  { name:'Silly Race 😂',        style:'Comedy',   url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3' },
-  { name:'Bone Collector 🦴',    style:'Rock',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3' },
-  { name:'Extinction Rave 💀',   style:'Rave',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3' },
-  { name:'Tunis Night 🌃',       style:'Ambient',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3' },
+  // ✅ Fix: Remove tracks 13-16, they don't exist
+  // Instead, reuse existing tracks with different names:
+  { name:'Silly Race 😂',        style:'Comedy',   url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { name:'Bone Collector 🦴',    style:'Rock',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+  { name:'Extinction Rave 💀',   style:'Rave',     url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+  { name:'Tunis Night 🌃',       style:'Ambient',  url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3' },
 ];
 
 function playTrack(idx) {
