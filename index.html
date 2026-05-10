@@ -22,6 +22,16 @@
   }
   #gameCanvas{display:block;width:100%;height:100%;}
 
+  /* ─── MOBILE HINT ─── */
+  #mobileHint{
+    display:none;
+    position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+    z-index:40;color:rgba(255,255,255,0.7);font-size:.75rem;
+    pointer-events:none;animation:fadeHint 4s ease-in-out infinite;
+    text-align:center;
+  }
+  @keyframes fadeHint{0%,100%{opacity:.2;}50%{opacity:.8;}}
+
   /* ─── SCREENS ─── */
   .screen{
     position:absolute;inset:0;display:flex;flex-direction:column;
@@ -89,6 +99,18 @@
     font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
   }
   .panel-close:hover{background:rgba(255,255,255,.2);}
+
+  /* ─── MUSIC PANEL ─── */
+  .music-card{
+    background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);
+    border-radius:10px;padding:10px;text-align:center;cursor:pointer;
+    transition:border-color .2s,background .2s;
+  }
+  .music-card.active{border-color:#f9c74f;background:rgba(249,199,79,.15);}
+  .music-card:hover{background:rgba(255,255,255,.1);}
+  .music-style{font-size:.65rem;color:#9ca3af;margin-bottom:4px;}
+  .music-name{font-size:.75rem;color:#fff;font-weight:700;}
+  .music-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px;}
 
   /* ─── ROOM / ONLINE ─── */
   .room-input{
@@ -325,6 +347,9 @@
 <div id="gameWrapper">
   <canvas id="gameCanvas"></canvas>
 
+  <!-- ── MOBILE HINT ── -->
+  <div id="mobileHint">👆 Swipe up to jump · Hold to duck</div>
+
   <!-- ── LOADING ── -->
   <div class="screen" id="loadingScreen">
     <div style="font-size:4rem;animation:logoBounce 1s infinite">🦕</div>
@@ -346,9 +371,10 @@
         <button class="btn btn-secondary" onclick="showPanel('upgradesPanel')">⚡ الترقيات <span id="menuBones" style="color:#f9c74f;margin-left:4px"></span></button>
         <button class="btn btn-secondary" onclick="showPanel('skinsPanel')">🎨 المظاهر</button>
         <button class="btn btn-secondary" onclick="showPanel('leaderboardPanel')">🏆 المتصدرون</button>
-        <button class="btn btn-secondary" onclick="toggleMusic()">🎵 <span id="musicBtnText">الموسيقى: شغّالة</span></button>
+        <button class="btn btn-secondary" onclick="showPanel('musicPanel')">🎵 مشغل الموسيقى</button>
+        <button class="btn btn-secondary" onclick="toggleMusic()">🔊 <span id="musicBtnText">Music: ON</span></button>
       </div>
-      <div class="text-muted" style="margin-top:8px">v2.0 · مصنوع بـ🦴 وفوضى تونسية</div>
+      <div class="text-muted" style="margin-top:8px">v3.0 · مصنوع بـ🦴 وفوضى تونسية</div>
     </div>
   </div>
 
@@ -486,6 +512,21 @@
       <div class="panel-title">🏆 المتصدرون</div>
       <button class="panel-close" onclick="hidePanel('leaderboardPanel')">✕</button>
       <div id="leaderboardList"></div>
+    </div>
+  </div>
+
+  <!-- MUSIC PANEL -->
+  <div class="panel hidden" id="musicPanel">
+    <div class="panel-box">
+      <div class="panel-title">🎵 مشغل الموسيقى</div>
+      <button class="panel-close" onclick="hidePanel('musicPanel')">✕</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <button class="btn btn-sm btn-secondary" onclick="prevTrack()">⏮️</button>
+        <button class="btn btn-sm btn-secondary" onclick="nextTrack()">⏭️</button>
+        <span style="color:#fff;flex:1;text-align:center;font-size:.8rem" id="currentTrackName">No track</span>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.2" oninput="setMusicVolume(this.value)" style="width:80px">
+      </div>
+      <div class="music-grid" id="musicGrid"></div>
     </div>
   </div>
 
