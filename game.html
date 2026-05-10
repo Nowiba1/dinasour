@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dino Runner+ - Game</title>
+    <title>Dino Runner+ - Complete Edition</title>
     <style>
         :root {
             --bg-primary: #0f0c29;
@@ -77,22 +77,6 @@
             image-rendering: auto;
         }
 
-        /* Overlay UI */
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        #ui-layer > * {
-            pointer-events: auto;
-        }
-
-        /* Music Indicator */
         #music-indicator {
             position: absolute;
             top: 15px;
@@ -111,7 +95,30 @@
             transition: all 0.3s ease;
         }
 
-        /* Mobile Controls */
+        #back-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 20;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        #back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+        }
+
         #mobile-controls {
             display: none;
             position: absolute;
@@ -148,32 +155,6 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
-        /* Back Button */
-        #back-button {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 10px 18px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 20;
-            transition: all 0.3s ease;
-            display: none;
-        }
-
-        #back-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #fff;
-        }
-
-        /* Game Over Overlay */
         #game-over-overlay {
             position: absolute;
             top: 0;
@@ -275,23 +256,55 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        /* Responsive */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+        .modal-box h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .modal-box button {
+            background: linear-gradient(135deg, var(--accent-red), #ff8e53);
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
         @media (max-width: 768px), (hover: none) and (pointer: coarse) {
-            #mobile-controls {
-                display: flex;
-            }
-            #back-button {
-                display: block;
-            }
-            .game-over-card {
-                padding: 25px;
-            }
-            .game-over-card h2 {
-                font-size: 24px;
-            }
-            .game-over-card .score-display {
-                font-size: 36px;
-            }
+            #mobile-controls { display: flex; }
+            #back-button { display: block; }
+            .game-over-card { padding: 25px; }
+            .game-over-card h2 { font-size: 24px; }
+            .game-over-card .score-display { font-size: 36px; }
         }
     </style>
 </head>
@@ -315,19 +328,37 @@
             </div>
         </div>
     </div>
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <h3 id="modal-title">Notice</h3>
+            <p id="modal-message"></p>
+            <button id="modal-close">OK</button>
+        </div>
+    </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
     (function() {
-        // ─────────────── CONFIGURATION ───────────────
+        // ═══════════════════════════════════════════
+        // CONFIGURATION - Fullscreen Dynamic
+        // ═══════════════════════════════════════════
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, GROUND_RATIO = 0.78;
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        window.addEventListener('orientationchange', () => setTimeout(resize, 150));
+        resize();
+
         const CONFIG = {
-            CANVAS_WIDTH: 1000,
-            CANVAS_HEIGHT: 562,
-            GROUND_Y: 440,
-            DINO_X: 120,
+            get GROUND_Y() { return Math.floor(H * GROUND_RATIO); },
+            get DINO_X() { return W * 0.12; },
             GRAVITY: 0.6,
             JUMP_FORCE: -12,
             DOUBLE_JUMP_FORCE: -9.5,
@@ -358,7 +389,9 @@
             ]
         };
 
-        // ─────────────── GAME STATE ───────────────
+        // ═══════════════════════════════════════════
+        // GAME STATE
+        // ═══════════════════════════════════════════
         const STATE = {
             screen: 'menu',
             gameMode: 'single',
@@ -380,10 +413,15 @@
             leaderboard: [],
             musicMood: 'menu',
             dayNight: 0,
+            dayTime: 0,
             activeEvent: null,
             eventTimer: 0,
             eventCooldown: 300,
-            lastObstacleX: 0
+            lastObstacleX: 0,
+            wastedTimer: 0,
+            wastedActive: false,
+            flyerActive: false,
+            flyerTimer: 0,
         };
 
         const PLAYER = {
@@ -416,25 +454,10 @@
         const INPUT = { space: false, w: false, touchJump: false };
         let audioCtx = null, masterGain = null, musicGain = null, audioEnabled = true, musicNodes = [];
         let onlineRef = null, firebaseReady = false, onlineRoom = null, onlinePlayerId = null, onlinePlayers = {};
-
-        // ─────────────── CANVAS SETUP ───────────────
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('game-container');
-
-        function resizeCanvas() {
-            const rect = container.getBoundingClientRect();
-            const scale = Math.min(rect.width / CONFIG.CANVAS_WIDTH, rect.height / CONFIG.CANVAS_HEIGHT);
-            canvas.width = CONFIG.CANVAS_WIDTH;
-            canvas.height = CONFIG.CANVAS_HEIGHT;
-            canvas.style.width = (CONFIG.CANVAS_WIDTH * scale) + 'px';
-            canvas.style.height = (CONFIG.CANVAS_HEIGHT * scale) + 'px';
-        }
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
-        resizeCanvas();
-
-        // ─────────────── AUDIO SYSTEM ───────────────
+        let bgMusicAudio = null;
+                // ═══════════════════════════════════════════
+        // AUDIO SYSTEM
+        // ═══════════════════════════════════════════
         function initAudio() {
             if (!audioCtx) {
                 try {
@@ -483,30 +506,65 @@
         function sfxPowerup() { playTone(300, 0.06, 'sine', 0.15); playTone(500, 0.06, 'sine', 0.15); playTone(700, 0.06, 'sine', 0.15); playTone(1000, 0.1, 'sine', 0.2); }
         function sfxClick() { playTone(800, 0.04, 'sine', 0.1); }
 
-        // ─────────────── MUSIC ───────────────
-        function stopMusic() {
-            musicNodes.forEach(n => { try { n.osc.stop(); } catch(e) {} try { n.gain.disconnect(); } catch(e) {} });
+        // ═══════════════════════════════════════════
+        // BACKGROUND MUSIC (Pixabay API + Fallback)
+        // ═══════════════════════════════════════════
+        const MUSIC_TRACKS = {
+            menu: 'https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7b0c1.mp3',
+            action: 'https://cdn.pixabay.com/audio/2022/05/17/audio_d5c6b7a0f2.mp3',
+            intense: 'https://cdn.pixabay.com/audio/2022/03/15/audio_e4f2a1c0d9.mp3',
+            death: 'https://cdn.pixabay.com/audio/2022/01/20/audio_a3b1c9d0e8.mp3',
+        };
+
+        function stopBgMusic() {
+            if (bgMusicAudio) {
+                bgMusicAudio.pause();
+                bgMusicAudio.src = '';
+                bgMusicAudio = null;
+            }
+            stopGeneratedMusic();
+        }
+
+        function stopGeneratedMusic() {
+            musicNodes.forEach(n => { try { n.osc.stop(); } catch(e){} try { n.gain.disconnect(); } catch(e){} });
             musicNodes = [];
         }
 
         function playMusicMood(mood) {
-            if (!audioEnabled || !audioCtx || audioCtx.state !== 'running') return;
-            if (STATE.musicMood === mood) return;
-            stopMusic();
+            if (!audioEnabled) return;
+            stopBgMusic();
             STATE.musicMood = mood;
             document.getElementById('music-indicator').textContent = '🎵 ' + mood.toUpperCase();
+            
+            const url = MUSIC_TRACKS[mood];
+            if (url) {
+                bgMusicAudio = new Audio(url);
+                bgMusicAudio.loop = true;
+                bgMusicAudio.volume = 0.3;
+                bgMusicAudio.play().catch(() => {
+                    playGeneratedMusic(mood);
+                });
+            } else {
+                playGeneratedMusic(mood);
+            }
+        }
+
+        function playGeneratedMusic(mood) {
+            if (!audioCtx || audioCtx.state !== 'running') return;
+            stopGeneratedMusic();
             const t = audioCtx.currentTime;
             const patterns = {
                 menu: [{ f: 261, d: 0.4, g: 0.6, type: 'sine' }, { f: 329, d: 0.4, g: 0.6, type: 'sine' }, { f: 392, d: 0.5, g: 0.5, type: 'triangle' }],
                 action: [{ f: 440, d: 0.2, g: 0.3, type: 'square' }, { f: 554, d: 0.2, g: 0.3, type: 'square' }, { f: 659, d: 0.25, g: 0.25, type: 'sawtooth' }],
                 intense: [{ f: 220, d: 0.15, g: 0.2, type: 'sawtooth' }, { f: 277, d: 0.15, g: 0.2, type: 'sawtooth' }, { f: 330, d: 0.2, g: 0.15, type: 'square' }, { f: 392, d: 0.15, g: 0.2, type: 'sawtooth' }],
-                fun: [{ f: 330, d: 0.3, g: 0.5, type: 'triangle' }, { f: 392, d: 0.3, g: 0.5, type: 'sine' }, { f: 494, d: 0.4, g: 0.4, type: 'triangle' }]
+                fun: [{ f: 330, d: 0.3, g: 0.5, type: 'triangle' }, { f: 392, d: 0.3, g: 0.5, type: 'sine' }, { f: 494, d: 0.4, g: 0.4, type: 'triangle' }],
+                death: [{ f: 200, d: 0.6, g: 0.3, type: 'triangle' }, { f: 180, d: 0.6, g: 0.3, type: 'triangle' }]
             };
             const pattern = patterns[mood] || patterns.menu;
             let offset = 0;
             const loopDur = pattern.reduce((s, n) => s + n.d + n.g, 0);
             function schedule() {
-                if (STATE.musicMood !== mood) return;
+                if (STATE.musicMood !== mood || !audioCtx) return;
                 pattern.forEach(note => {
                     try {
                         const osc = audioCtx.createOscillator();
@@ -528,11 +586,26 @@
             schedule();
         }
 
-        // ─────────────── COLLISION SYSTEM (Mesh Colliders) ───────────────
+        // ═══════════════════════════════════════════
+        // MODAL SYSTEM (replaces browser alerts)
+        // ═══════════════════════════════════════════
+        function showModal(title, message) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal').classList.add('active');
+        }
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+        });
+
+        // ═══════════════════════════════════════════
+        // COLLISION SYSTEM (Mesh Colliders)
+        // ═══════════════════════════════════════════
         function getPlayerBounds(p, isDucking) {
-            const w = isDucking ? 52 : 38;
-            const h = isDucking ? 30 : 48;
-            const baseY = isDucking ? p.y + 18 : p.y;
+            const ducking = isDucking !== undefined ? isDucking : p.ducking;
+            const w = ducking ? 52 : 38;
+            const h = ducking ? 30 : 48;
+            const baseY = ducking ? p.y + 18 : p.y;
             return {
                 x: p.x - w/2 + 6,
                 y: baseY - h + 4,
@@ -574,7 +647,7 @@
                         if (p.shieldHits >= p.shieldMax) { p.shield = false; p.shieldHits = 0; }
                         obstacles.splice(i, 1);
                         for (let j = 0; j < 15; j++) particles.push({
-                            x: obstacles[i]?.x || p.x, y: CONFIG.GROUND_Y - 25,
+                            x: p.x, y: CONFIG.GROUND_Y - 25,
                             vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5-2,
                             life: 20, maxLife: 35, color: '#4fc3f7', size: 3+Math.random()*3
                         });
@@ -587,29 +660,31 @@
             return false;
         }
 
-        // ─────────────── OBSTACLE SPAWNING (Dynamic, Well-Spaced) ───────────────
+        // ═══════════════════════════════════════════
+        // SPAWNING (Dynamic, Well-Spaced)
+        // ═══════════════════════════════════════════
         function spawnObstacle() {
             const lastObs = obstacles.length > 0 ? Math.max(...obstacles.map(o => o.x)) : STATE.lastObstacleX;
             const minGap = CONFIG.OBSTACLE_MIN_GAP;
             const maxGap = CONFIG.OBSTACLE_MAX_GAP;
             const gap = minGap + Math.random() * (maxGap - minGap);
 
-            if (lastObs < CONFIG.CANVAS_WIDTH - gap) {
-                const spawnX = Math.max(CONFIG.CANVAS_WIDTH + 30, lastObs + gap);
-                if (Math.random() < 0.55) {
+            if (lastObs < W - gap) {
+                const spawnX = Math.max(W + 30, lastObs + gap);
+                if (STATE.flyerActive && Math.random() < 0.5) {
+                    obstacles.push({
+                        x: spawnX,
+                        type: 'pterodactyl',
+                        height: 50 + Math.floor(Math.random() * 60),
+                        width: 44
+                    });
+                } else {
                     obstacles.push({
                         x: spawnX,
                         type: 'cactus',
                         variant: Math.floor(Math.random() * 3),
                         height: 45 + Math.floor(Math.random() * 30),
                         width: 18
-                    });
-                } else {
-                    obstacles.push({
-                        x: spawnX,
-                        type: 'pterodactyl',
-                        height: 50 + Math.floor(Math.random() * 60),
-                        width: 44
                     });
                 }
                 STATE.lastObstacleX = spawnX;
@@ -619,7 +694,7 @@
         function spawnPowerup() {
             if (powerups.length >= 3) return;
             const types = ['jetpack', 'magnet', 'slowmo', 'shield', 'banana'];
-            const spawnX = CONFIG.CANVAS_WIDTH + 50 + Math.random() * 200;
+            const spawnX = W + 50 + Math.random() * 200;
             powerups.push({
                 x: spawnX,
                 y: CONFIG.GROUND_Y - 50 - Math.random() * 30,
@@ -629,62 +704,71 @@
 
         function spawnBone() {
             if (bones.length >= 6) return;
-            const spawnX = CONFIG.CANVAS_WIDTH + 40 + Math.random() * 150;
+            const spawnX = W + 40 + Math.random() * 150;
             bones.push({ x: spawnX, y: CONFIG.GROUND_Y - 15 });
         }
 
-        // ─────────────── RENDERER ───────────────
-        function drawBackground() {
-            const t = STATE.dayNight % 2 === 0 ? 0 : 1;
-            const grad = ctx.createLinearGradient(0, 0, 0, CONFIG.GROUND_Y);
-            grad.addColorStop(0, t === 0 ? '#87CEEB' : '#1a1a3e');
-            grad.addColorStop(0.6, t === 0 ? '#e0f0ff' : '#2a2a4e');
-            grad.addColorStop(1, '#f0e6d3');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.GROUND_Y);
+        // ═══════════════════════════════════════════
+        // RENDERER (Full Graphics)
+        // ═══════════════════════════════════════════
+        function drawSky() {
+            const hour = STATE.dayTime % 24;
+            let topColor, botColor;
+            if (hour < 5) { topColor = '#0a0a2e'; botColor = '#1a1a3e'; }
+            else if (hour < 7) { topColor = '#2c3e6b'; botColor = '#e0995e'; }
+            else if (hour < 18) { topColor = '#4a90d9'; botColor = '#c9e4ff'; }
+            else if (hour < 20) { topColor = '#e0995e'; botColor = '#2c3e6b'; }
+            else { topColor = '#1a1a3e'; botColor = '#0a0a2e'; }
 
-            const scrollSlow = STATE.groundScroll * 0.15;
-            for (let i = 0; i < 8; i++) {
-                const mx = ((i * 120 - scrollSlow) % (CONFIG.CANVAS_WIDTH + 250)) - 125;
-                const mh = 60 + Math.sin(i * 1.5) * 40;
-                ctx.fillStyle = `rgba(${100+i*10},${120+i*8},${140+i*12},0.5)`;
+            const grad = ctx.createLinearGradient(0, 0, 0, CONFIG.GROUND_Y);
+            grad.addColorStop(0, topColor);
+            grad.addColorStop(1, botColor);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, CONFIG.GROUND_Y);
+
+            // Sun/Moon
+            if (hour >= 6 && hour <= 20) {
+                const sunY = CONFIG.GROUND_Y - 80 - Math.sin((hour-6)/14 * Math.PI) * Math.min(H*0.3, 200);
+                ctx.fillStyle = '#ffeb3b';
                 ctx.beginPath();
-                ctx.moveTo(mx, CONFIG.GROUND_Y);
-                ctx.lineTo(mx + 55, CONFIG.GROUND_Y - mh);
-                ctx.lineTo(mx + 110, CONFIG.GROUND_Y);
+                ctx.arc(W * 0.8, sunY, Math.min(30, W*0.03), 0, Math.PI*2);
+                ctx.fill();
+            } else {
+                const moonY = CONFIG.GROUND_Y - 80 - Math.sin((hour-20)/8 * Math.PI) * 180;
+                ctx.fillStyle = '#f0f0f0';
+                ctx.beginPath();
+                ctx.arc(W * 0.2, moonY, 25, 0, Math.PI*2);
                 ctx.fill();
             }
 
-            const scrollClouds = STATE.groundScroll * 0.06;
-            for (let i = 0; i < 5; i++) {
-                const cx = ((i * 200 - scrollClouds) % (CONFIG.CANVAS_WIDTH + 350)) - 175;
-                const cy = 45 + i * 35;
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.beginPath();
-                ctx.arc(cx, cy, 20, 0, Math.PI*2);
-                ctx.arc(cx+25, cy-7, 16, 0, Math.PI*2);
-                ctx.arc(cx+45, cy+2, 22, 0, Math.PI*2);
-                ctx.fill();
+            // Stars at night
+            if (hour > 20 || hour < 5) {
+                ctx.fillStyle = '#fff';
+                for (let i=0; i<40; i++) {
+                    ctx.beginPath();
+                    ctx.arc((i*73)%W, (i*31)%(CONFIG.GROUND_Y*0.7), 1.2, 0, Math.PI*2);
+                    ctx.fill();
+                }
             }
         }
 
         function drawGround() {
             const y = CONFIG.GROUND_Y;
-            const grad = ctx.createLinearGradient(0, y, 0, CONFIG.CANVAS_HEIGHT);
+            const grad = ctx.createLinearGradient(0, y, 0, H);
             grad.addColorStop(0, '#c8b99a');
             grad.addColorStop(0.3, '#a89880');
             grad.addColorStop(1, '#6b5b4f');
             ctx.fillStyle = grad;
-            ctx.fillRect(0, y, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT - y);
+            ctx.fillRect(0, y, W, H - y);
             ctx.strokeStyle = '#8b7355';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(CONFIG.CANVAS_WIDTH, y);
+            ctx.lineTo(W, y);
             ctx.stroke();
             const offset = STATE.groundScroll % 24;
             ctx.fillStyle = 'rgba(0,0,0,0.12)';
-            for (let x = -offset; x < CONFIG.CANVAS_WIDTH; x += 24) {
+            for (let x = -offset; x < W; x += 24) {
                 ctx.fillRect(x, y+3, 12, 2);
             }
         }
@@ -869,15 +953,28 @@
             ctx.restore();
         }
 
+        function drawWasted() {
+            if (!STATE.wastedActive) return;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(0,0,W,H);
+            ctx.fillStyle = '#ff0000';
+            ctx.font = 'bold 60px Impact, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('WASTED', W/2, H/2);
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px sans-serif';
+            ctx.fillText('Respawning...', W/2, H/2+40);
+        }
+
         function drawHUD() {
             ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.fillRect(CONFIG.CANVAS_WIDTH-170, 8, 162, 88);
+            ctx.fillRect(W-170, 8, 162, 88);
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 15px "Segoe UI", sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(`Score: ${Math.floor(STATE.score)}`, CONFIG.CANVAS_WIDTH-18, 30);
-            ctx.fillText(`HI: ${Math.floor(STATE.highScore)}`, CONFIG.CANVAS_WIDTH-18, 52);
-            ctx.fillText(`🦴 ${STATE.bones}`, CONFIG.CANVAS_WIDTH-18, 74);
+            ctx.fillText(`Score: ${Math.floor(STATE.score)}`, W-18, 30);
+            ctx.fillText(`HI: ${Math.floor(STATE.highScore)}`, W-18, 52);
+            ctx.fillText(`🦴 ${STATE.bones}`, W-18, 74);
             if (PLAYER.powerup) {
                 const rem = PLAYER.powerupTimer / CONFIG.POWERUP_DURATION;
                 ctx.fillStyle = rem > 0.3 ? '#4caf50' : '#f44336';
@@ -936,11 +1033,13 @@
             });
         }
 
-        // ─────────────── MENU RENDERING ───────────────
+        // ═══════════════════════════════════════════
+        // MENU RENDERING
+        // ═══════════════════════════════════════════
         function drawMenu() {
             ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-            drawBackground();
+            ctx.fillRect(0, 0, W, H);
+            drawSky();
             drawGround();
             STATE.groundScroll += 2;
             STATE.frame++;
@@ -952,10 +1051,10 @@
             ctx.fillStyle = titleGrad;
             ctx.font = 'bold 40px "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🦖 DINO RUNNER+', CONFIG.CANVAS_WIDTH/2, 85);
+            ctx.fillText('🦖 DINO RUNNER+', W/2, 85);
             ctx.fillStyle = '#fff';
             ctx.font = '13px sans-serif';
-            ctx.fillText('Enhanced Edition', CONFIG.CANVAS_WIDTH/2, 108);
+            ctx.fillText('Enhanced Edition', W/2, 108);
 
             const btns = [
                 { label: '▶  PLAY SOLO', y: 155, action: 'startSingle' },
@@ -968,7 +1067,7 @@
             ];
 
             btns.forEach(btn => {
-                const bx = CONFIG.CANVAS_WIDTH/2 - 150;
+                const bx = W/2 - 150;
                 ctx.fillStyle = 'rgba(255,255,255,0.08)';
                 ctx.strokeStyle = 'rgba(255,255,255,0.35)';
                 ctx.lineWidth = 2;
@@ -978,36 +1077,36 @@
                 ctx.stroke();
                 ctx.fillStyle = '#fff';
                 ctx.font = 'bold 15px "Segoe UI", sans-serif';
-                ctx.fillText(btn.label, CONFIG.CANVAS_WIDTH/2, btn.y+7);
+                ctx.fillText(btn.label, W/2, btn.y+7);
             });
 
             ctx.fillStyle = '#aaa';
             ctx.font = '12px sans-serif';
-            ctx.fillText(`HS: ${Math.floor(STATE.highScore)} | 🦴 ${STATE.bones} | Press SPACE or Tap to Play`, CONFIG.CANVAS_WIDTH/2, 470);
+            ctx.fillText(`HS: ${Math.floor(STATE.highScore)} | 🦴 ${STATE.bones} | Press SPACE or Tap to Play`, W/2, 470);
         }
 
         function drawSubMenu(title, contentFn) {
             ctx.fillStyle = 'rgba(10,10,30,0.95)';
-            ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+            ctx.fillRect(0, 0, W, H);
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 26px "Segoe UI", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(title, CONFIG.CANVAS_WIDTH/2, 40);
+            ctx.fillText(title, W/2, 40);
             ctx.font = '12px sans-serif';
-            ctx.fillText('ESC to go back', CONFIG.CANVAS_WIDTH/2, 62);
+            ctx.fillText('ESC to go back', W/2, 62);
             contentFn();
         }
 
         function drawUpgradesMenu() {
             drawSubMenu('UPGRADES', () => {
-                ctx.fillText(`🦴 ${STATE.bones} bones`, CONFIG.CANVAS_WIDTH/2, 80);
+                ctx.fillText(`🦴 ${STATE.bones} bones`, W/2, 80);
                 CONFIG.UPGRADES.forEach((u, i) => {
                     const lvl = STATE.upgradeLevels[u.id] || 0;
                     const y = 95 + i*75;
                     ctx.fillStyle = 'rgba(255,255,255,0.06)';
                     ctx.strokeStyle = 'rgba(255,255,255,0.25)';
                     ctx.beginPath();
-                    ctx.roundRect(25, y-3, CONFIG.CANVAS_WIDTH-50, 58, 10);
+                    ctx.roundRect(25, y-3, W-50, 58, 10);
                     ctx.fill();
                     ctx.stroke();
                     ctx.fillStyle = '#fff';
@@ -1019,11 +1118,11 @@
                     if (lvl < 3) {
                         ctx.fillStyle = STATE.bones >= u.costs[lvl] ? '#4caf50' : '#f44336';
                         ctx.textAlign = 'right';
-                        ctx.fillText(`Buy: ${u.costs[lvl]} 🦴`, CONFIG.CANVAS_WIDTH-55, y+22);
+                        ctx.fillText(`Buy: ${u.costs[lvl]} 🦴`, W-55, y+22);
                     } else {
                         ctx.fillStyle = '#ffd700';
                         ctx.textAlign = 'right';
-                        ctx.fillText('✓ MAX', CONFIG.CANVAS_WIDTH-55, y+22);
+                        ctx.fillText('✓ MAX', W-55, y+22);
                     }
                 });
             });
@@ -1059,7 +1158,7 @@
                 const entries = STATE.leaderboard.slice(0, 10);
                 if (entries.length === 0) {
                     ctx.fillStyle = '#aaa';
-                    ctx.fillText('No scores yet. Play a game!', CONFIG.CANVAS_WIDTH/2, 200);
+                    ctx.fillText('No scores yet. Play a game!', W/2, 200);
                 }
                 entries.forEach((e, i) => {
                     const y = 100 + i*40;
@@ -1074,7 +1173,9 @@
             });
         }
 
-        // ─────────────── GAME LOGIC ───────────────
+        // ═══════════════════════════════════════════
+        // GAME LOGIC
+        // ═══════════════════════════════════════════
         function resetGame() {
             PLAYER.x = CONFIG.DINO_X; PLAYER.y = CONFIG.GROUND_Y; PLAYER.vy = 0;
             PLAYER.jumping = false; PLAYER.ducking = false; PLAYER.doubleJumped = false;
@@ -1092,6 +1193,8 @@
 
             STATE.score = 0; STATE.speed = CONFIG.INITIAL_SPEED; STATE.frame = 0;
             STATE.dead = false; STATE.shakeTimer = 0; STATE.lastObstacleX = 0;
+            STATE.wastedActive = false; STATE.wastedTimer = 0;
+            STATE.flyerActive = false; STATE.flyerTimer = 0;
             STATE.activeEvent = null; STATE.eventTimer = 0;
             STATE.eventCooldown = 250 + Math.random()*300;
             STATE.dayNight = 0;
@@ -1142,7 +1245,7 @@
             if (p.banana && p.slipCooldown <= 0 && p.jumping && Math.random()<p.slipChance) {
                 p.slipCooldown = 25;
                 p.x += (Math.random()-0.5)*45;
-                p.x = Math.max(30, Math.min(CONFIG.CANVAS_WIDTH-60, p.x));
+                p.x = Math.max(30, Math.min(W-60, p.x));
             }
             if (p.slipCooldown > 0) p.slipCooldown--;
             p.animTimer++;
@@ -1308,7 +1411,9 @@
             saveState();
         }
 
-        // ─────────────── FIREBASE ONLINE ───────────────
+        // ═══════════════════════════════════════════
+        // FIREBASE ONLINE
+        // ═══════════════════════════════════════════
         function initFirebase() {
             try {
                 if (typeof firebase === 'undefined') return;
@@ -1329,7 +1434,7 @@
         }
 
         function createOnlineRoom() {
-            if (!firebaseReady) { alert('Firebase not connected. Online mode unavailable.'); return; }
+            if (!firebaseReady) { showModal('Error', 'Firebase not connected'); return; }
             const code = Math.random().toString(36).substring(2,8).toUpperCase();
             onlinePlayerId = 'host_'+Date.now();
             onlineRef.child(code).set({
@@ -1340,17 +1445,17 @@
                 onlineRoom = code; STATE.gameMode = 'online';
                 STATE.screen = 'playing'; STATE.running = true;
                 resetGame(); listenOnlineRoom(code);
-                alert(`Room created! Code: ${code}\nShare with friends to join.`);
-            }).catch(e => alert('Error: '+e.message));
+                showModal('Room Created', `Code: ${code}\nShare with friends!`);
+            }).catch(e => showModal('Error', e.message));
         }
 
         function joinPublicRoom() {
-            if (!firebaseReady) { alert('Firebase not connected.'); return; }
+            if (!firebaseReady) { showModal('Error', 'Firebase not connected'); return; }
             onlineRef.once('value').then(snap => {
                 const rooms = snap.val();
-                if (!rooms) { alert('No rooms available. Create one!'); return; }
+                if (!rooms) { showModal('No Rooms', 'Create a room first!'); return; }
                 const avail = Object.entries(rooms).find(([c,d]) => d.status==='waiting' && Object.keys(d.players||{}).length < 4);
-                if (!avail) { alert('No available rooms. Create one!'); return; }
+                if (!avail) { showModal('No Rooms', 'All rooms full. Create one!'); return; }
                 onlinePlayerId = 'player_'+Date.now();
                 onlineRoom = avail[0];
                 onlineRef.child(onlineRoom+'/players/'+onlinePlayerId).set({
@@ -1359,7 +1464,7 @@
                     STATE.gameMode = 'online'; STATE.screen = 'playing'; STATE.running = true;
                     resetGame(); listenOnlineRoom(onlineRoom);
                 });
-            }).catch(e => alert('Error: '+e.message));
+            }).catch(e => showModal('Error', e.message));
         }
 
         function listenOnlineRoom(code) {
@@ -1383,7 +1488,9 @@
             }
         }
 
-        // ─────────────── SCREEN MANAGEMENT ───────────────
+        // ═══════════════════════════════════════════
+        // SCREEN MANAGEMENT
+        // ═══════════════════════════════════════════
         function showGameOver() {
             document.getElementById('final-score').textContent = Math.floor(STATE.score);
             document.getElementById('final-high').textContent = 'Best: ' + Math.floor(STATE.highScore);
@@ -1398,6 +1505,7 @@
             STATE.screen = 'menu';
             STATE.running = false;
             STATE.dead = false;
+            STATE.wastedActive = false;
             hideGameOver();
             playMusicMood('menu');
             document.getElementById('back-button').style.display = 'none';
@@ -1413,6 +1521,7 @@
             STATE.screen = 'playing';
             STATE.running = true;
             STATE.dead = false;
+            STATE.wastedActive = false;
             hideGameOver();
             resetGame();
             playMusicMood('action');
@@ -1430,14 +1539,14 @@
                     { y: 241, action: 'createRoom' }, { y: 284, action: 'joinPublic' },
                     { y: 327, action: 'upgrades' }, { y: 370, action: 'skins' }, { y: 413, action: 'leaderboard' }
                 ];
-                const bx = CONFIG.CANVAS_WIDTH/2 - 150;
+                const bx = W/2 - 150;
                 btns.forEach(b => {
                     if (mx>=bx && mx<=bx+300 && my>=b.y-14 && my<=b.y+22) handleAction(b.action);
                 });
             } else if (STATE.screen === 'upgrades') {
                 CONFIG.UPGRADES.forEach((u,i) => {
                     const y = 95 + i*75;
-                    if (mx>=CONFIG.CANVAS_WIDTH-170 && mx<=CONFIG.CANVAS_WIDTH-30 && my>=y+5 && my<=y+45) buyUpgrade(u.id);
+                    if (mx>=W-170 && mx<=W-30 && my>=y+5 && my<=y+45) buyUpgrade(u.id);
                 });
             } else if (STATE.screen === 'skins') {
                 CONFIG.SKINS.forEach((s,i) => {
@@ -1471,7 +1580,9 @@
             else sfxDeath();
         }
 
-        // ─────────────── INPUT HANDLING ───────────────
+        // ═══════════════════════════════════════════
+        // INPUT HANDLING
+        // ═══════════════════════════════════════════
         document.addEventListener('keydown', e => {
             resumeAudio();
             const k = e.key.toLowerCase();
@@ -1495,22 +1606,20 @@
             if (k === 'w') INPUT.w = false;
         });
 
-        // Canvas click
         canvas.addEventListener('click', e => {
             resumeAudio();
             const rect = canvas.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) * CONFIG.CANVAS_WIDTH / rect.width;
-            const my = (e.clientY - rect.top) * CONFIG.CANVAS_HEIGHT / rect.height;
+            const mx = (e.clientX - rect.left) * W / rect.width;
+            const my = (e.clientY - rect.top) * H / rect.height;
             if (STATE.screen === 'menu' || STATE.screen === 'upgrades' || STATE.screen === 'skins' || STATE.screen === 'leaderboard') {
                 handleMenuClick(mx, my);
             }
-            if (STATE.screen === 'playing' && STATE.running && !STATE.dead) {
+            if (STATE.screen === 'playing' && STATE.running && !STATE.dead && !STATE.wastedActive) {
                 INPUT.touchJump = true;
                 setTimeout(() => INPUT.touchJump = false, 80);
             }
         });
 
-        // Touch controls
         canvas.addEventListener('touchstart', e => {
             e.preventDefault();
             resumeAudio();
@@ -1525,7 +1634,6 @@
             INPUT.touchJump = false;
         }, { passive: false });
 
-        // Mobile button
         document.getElementById('btn-jump')?.addEventListener('pointerdown', e => {
             e.preventDefault();
             resumeAudio();
@@ -1538,19 +1646,35 @@
             INPUT.touchJump = false;
         });
 
-        // Game Over buttons
         document.getElementById('btn-restart')?.addEventListener('click', restartGame);
         document.getElementById('btn-main-menu')?.addEventListener('click', goToMenu);
-
-        // Back button
         document.getElementById('back-button')?.addEventListener('click', goToMenu);
 
-        // ─────────────── MAIN LOOP ───────────────
+        // ═══════════════════════════════════════════
+        // MAIN UPDATE LOOP
+        // ═══════════════════════════════════════════
         function update() {
             if (STATE.screen !== 'playing' || !STATE.running) return;
+
+            // Wasted respawn
+            if (STATE.wastedActive) {
+                STATE.wastedTimer--;
+                if (STATE.wastedTimer <= 0) {
+                    STATE.wastedActive = false;
+                    PLAYER.dead = false;
+                    PLAYER.y = CONFIG.GROUND_Y;
+                    PLAYER.vy = 0;
+                    STATE.score = 0;
+                    STATE.speed = CONFIG.INITIAL_SPEED;
+                    obstacles = [];
+                }
+                return;
+            }
+
             if (STATE.dead) return;
 
             STATE.frame++;
+            STATE.dayTime = (STATE.dayTime + 0.02) % 24;
             const effSpeed = (PLAYER.slowmo || PLAYER2.slowmo) ? STATE.speed * CONFIG.SLOWMO_FACTOR : STATE.speed;
 
             STATE.score += CONFIG.SCORE_PER_FRAME * (effSpeed / CONFIG.INITIAL_SPEED);
@@ -1561,6 +1685,9 @@
             const maxSpeed = CONFIG.MAX_SPEED * (1 - (STATE.upgradeLevels['speedControl']||0)*0.08);
             if (STATE.speed < maxSpeed && currMilestone > prevMilestone) STATE.speed = Math.min(maxSpeed, STATE.speed + CONFIG.SPEED_INCREMENT);
 
+            // Flyer events
+            STATE.flyerActive = (STATE.score > 200 && STATE.score < 600) || (STATE.score > 1000 && STATE.score < 1400);
+
             STATE.dayNight = Math.floor(STATE.score / 300);
             STATE.groundScroll += effSpeed;
 
@@ -1570,7 +1697,6 @@
                 PLAYER2.score += CONFIG.SCORE_PER_FRAME;
             }
 
-            // Handle input
             if ((INPUT.space || INPUT.touchJump) && !STATE.dead && STATE.running) {
                 if (PLAYER.inputLag > 0) PLAYER.queuedJump = true;
                 else doJump(PLAYER);
@@ -1583,7 +1709,6 @@
                 INPUT.w = false;
             }
 
-            // Move objects
             obstacles.forEach(o => o.x -= effSpeed);
             obstacles = obstacles.filter(o => o.x > -60);
             powerups.forEach(p => p.x -= effSpeed);
@@ -1591,17 +1716,15 @@
             bones.forEach(b => b.x -= effSpeed);
             bones = bones.filter(b => b.x > -40);
 
-            // Spawn
             spawnObstacle();
             const powerupChance = CONFIG.POWERUP_CHANCE * (1 + (STATE.upgradeLevels['luckyPaws']||0)*0.2);
             if (Math.random() < powerupChance && powerups.length < 3) spawnPowerup();
             if (Math.random() < CONFIG.BONE_CHANCE && bones.length < 6) spawnBone();
 
-            // Collisions
             if (checkPlayerCollision(PLAYER)) {
-                STATE.dead = true;
-                STATE.shakeTimer = 18;
-                STATE.shakeIntensity = 10;
+                STATE.wastedActive = true;
+                STATE.wastedTimer = 90;
+                PLAYER.dead = true;
                 sfxDeath();
                 for (let i=0;i<25;i++) particles.push({
                     x: PLAYER.x, y: PLAYER.y-20,
@@ -1611,10 +1734,7 @@
                 if (STATE.score > STATE.highScore) STATE.highScore = Math.floor(STATE.score);
                 updateLeaderboard('');
                 saveState();
-                STATE.running = false;
-                playMusicMood('menu');
-                showGameOver();
-                if (onlineRoom) { syncOnline(); onlineRef.child(onlineRoom).off(); }
+                if (onlineRoom) { syncOnline(); }
                 return;
             }
 
@@ -1623,7 +1743,6 @@
                 sfxDeath();
             }
 
-            // Powerup collection
             powerups.forEach((pu, i) => {
                 if (Math.abs(PLAYER.x-pu.x)<24 && Math.abs(PLAYER.y-20-pu.y)<24) {
                     applyPowerup(PLAYER, pu.subtype);
@@ -1635,7 +1754,6 @@
                 }
             });
 
-            // Bone collection
             bones.forEach((b, i) => {
                 if (Math.abs(PLAYER.x-b.x) < (PLAYER.magnet?90:22) && Math.abs(PLAYER.y-b.y)<22) {
                     if (PLAYER.magnet) { b.x += (PLAYER.x-b.x)*0.2; b.y += (PLAYER.y-b.y)*0.2; }
@@ -1647,7 +1765,6 @@
             updateEvents();
             checkUnlocks();
 
-            // Update particles
             particles = particles.filter(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; return p.life>0; });
             dustParticles = dustParticles.filter(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; return p.life>0; });
             exhaustParticles = exhaustParticles.filter(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; return p.life>0; });
@@ -1658,14 +1775,13 @@
         }
 
         function render() {
-            ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+            ctx.clearRect(0, 0, W, H);
 
             if (STATE.screen === 'menu') { drawMenu(); return; }
             if (STATE.screen === 'upgrades') { drawUpgradesMenu(); return; }
             if (STATE.screen === 'skins') { drawSkinsMenu(); return; }
             if (STATE.screen === 'leaderboard') { drawLeaderboardMenu(); return; }
 
-            // Playing screen
             ctx.save();
             if (STATE.shakeTimer > 0) {
                 const sx = (Math.random()-0.5)*STATE.shakeIntensity;
@@ -1673,10 +1789,10 @@
                 ctx.setTransform(1, 0, 0, 1, sx, sy);
             }
 
-            drawBackground();
+            drawSky();
             if (STATE.activeEvent==='raveMode' && STATE.frame%3<1) {
                 ctx.fillStyle = 'rgba(255,0,255,0.05)';
-                ctx.fillRect(0,0,CONFIG.CANVAS_WIDTH,CONFIG.CANVAS_HEIGHT);
+                ctx.fillRect(0,0,W,H);
             }
             drawGround();
             obstacles.forEach(o => drawObstacle(o));
@@ -1685,7 +1801,7 @@
             drawAIPlayers();
             drawOnlinePlayers();
 
-            if (!STATE.dead) {
+            if (!PLAYER.dead && !STATE.wastedActive) {
                 if (PLAYER.shield) {
                     ctx.strokeStyle = '#4fc3f7';
                     ctx.lineWidth = 3;
@@ -1702,14 +1818,9 @@
                 drawDino(PLAYER2.x, PLAYER2.y, PLAYER2.ducking, PLAYER2.animFrame, 2);
             }
 
+            drawWasted();
             drawParticles();
             drawHUD();
-
-            const allDead2P = STATE.gameMode==='local2p' && STATE.dead && PLAYER2.dead;
-            if (allDead2P && !STATE.running) {
-                STATE.running = false;
-                showGameOver();
-            }
 
             ctx.restore();
         }
@@ -1720,18 +1831,18 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // ─────────────── INIT ───────────────
+        // ═══════════════════════════════════════════
+        // INITIALIZATION
+        // ═══════════════════════════════════════════
         function init() {
             loadState();
             initFirebase();
             initAudio();
-            resizeCanvas();
             STATE.screen = 'menu';
             playMusicMood('menu');
             document.getElementById('back-button').style.display = 'none';
             hideGameOver();
 
-            // First-click audio resume
             const resumeOnInteraction = () => {
                 resumeAudio();
                 document.removeEventListener('click', resumeOnInteraction);
