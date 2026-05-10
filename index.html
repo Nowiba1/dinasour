@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Dino Runner+ 🦕</title>
+<title>ديناصور تونس 🦕</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   :root{
@@ -50,7 +50,6 @@
 
   .logo-sub{color:#9ca3af;font-size:clamp(.75rem,2vw,1rem);letter-spacing:4px;text-transform:uppercase;margin-top:-8px;}
 
-  /* Canvas dino preview in menu */
   #menuDinoCanvas{width:clamp(120px,20vw,200px);height:80px;}
 
   .menu-btns{display:flex;flex-direction:column;gap:10px;width:min(320px,85vw);}
@@ -70,7 +69,7 @@
   .btn-online{background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;box-shadow:0 6px 20px rgba(67,97,238,.4);}
   .btn-sm{padding:8px 16px;font-size:.8rem;border-radius:8px;}
 
-  /* ─── PANELS (sub-screens within menu) ─── */
+  /* ─── PANELS ─── */
   .panel{
     position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
     background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
@@ -114,7 +113,7 @@
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
   .player-host-badge{font-size:.65rem;background:#f9c74f;color:#1a1a2e;padding:2px 6px;border-radius:4px;font-weight:700;}
 
-  /* ─── HUD (in-game) ─── */
+  /* ─── HUD ─── */
   #hud{
     position:absolute;top:0;left:0;right:0;z-index:30;
     display:flex;align-items:flex-start;justify-content:space-between;
@@ -182,6 +181,27 @@
     border:6px solid transparent;border-top-color:#fff;border-bottom:0;
   }
   #aiBubble.show{opacity:1;}
+
+  /* ─── WEATHER BADGE ─── */
+  #weatherBadge{
+    position:absolute;top:clamp(8px,2vh,16px);left:50%;transform:translateX(-50%);
+    z-index:32;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.2);border-radius:20px;
+    padding:4px 14px;color:#fff;font-size:.8rem;font-weight:700;
+    pointer-events:none;opacity:0;transition:opacity 1s;
+  }
+  #weatherBadge.show{opacity:1;}
+
+  /* ─── SOUNDPAD ─── */
+  #soundpad{
+    position:fixed;bottom:20px;right:20px;z-index:200;
+    background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.15);border-radius:14px;
+    padding:8px 12px;color:#fff;font-size:1.2rem;
+    pointer-events:none;opacity:0;transition:opacity .4s;
+    max-width:200px;text-align:center;
+  }
+  #soundpad.show{opacity:1;}
 
   /* ─── GAME OVER SCREEN ─── */
   #gameoverScreen{background:rgba(10,10,20,.92);backdrop-filter:blur(12px);}
@@ -290,11 +310,10 @@
     background:#1a1a2e;border:1px solid rgba(255,255,255,.2);
     color:#fff;padding:10px 20px;border-radius:50px;font-size:.85rem;
     z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;
-    white-space:nowrap;
+    white-space:nowrap;max-width:90vw;
   }
   .toast.show{opacity:1;}
 
-  /* Scrollbar */
   ::-webkit-scrollbar{width:4px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
@@ -309,9 +328,9 @@
   <!-- ── LOADING ── -->
   <div class="screen" id="loadingScreen">
     <div style="font-size:4rem;animation:logoBounce 1s infinite">🦕</div>
-    <div class="game-logo" style="font-size:2rem;margin-top:8px">DINO RUNNER+</div>
+    <div class="game-logo" style="font-size:2rem;margin-top:8px">ديناصور تونس</div>
     <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar" style="width:0%"></div></div>
-    <div class="loading-text" id="loadingText">Waking up the dinosaur...</div>
+    <div class="loading-text" id="loadingText">تحضير الديناصور...</div>
   </div>
 
   <!-- ── MAIN MENU ── -->
@@ -319,30 +338,33 @@
     <div class="menu-stars" id="menuStars"></div>
     <div class="menu-content">
       <div class="game-logo">🦕 DINO+</div>
-      <div class="logo-sub">The Upgraded Extinction</div>
+      <div class="logo-sub">تونس في الجوراسيك</div>
       <canvas id="menuDinoCanvas" width="200" height="80"></canvas>
       <div class="menu-btns">
-        <button class="btn btn-primary" onclick="startGame('solo')">▶ Play Solo</button>
-        <button class="btn btn-online" onclick="showPanel('onlinePanel')">🌐 Online Multiplayer</button>
-        <button class="btn btn-secondary" onclick="showPanel('upgradesPanel')">⚡ Upgrades <span id="menuBones" style="color:#f9c74f;margin-left:4px"></span></button>
-        <button class="btn btn-secondary" onclick="showPanel('skinsPanel')">🎨 Skins</button>
-        <button class="btn btn-secondary" onclick="showPanel('leaderboardPanel')">🏆 Leaderboard</button>
-        <button class="btn btn-secondary" onclick="toggleMusic()">🎵 <span id="musicBtnText">Music: ON</span></button>
+        <button class="btn btn-primary" onclick="startGame('solo')">▶ العب منفرد</button>
+        <button class="btn btn-online" onclick="showPanel('onlinePanel')">🌐 العب أونلاين</button>
+        <button class="btn btn-secondary" onclick="showPanel('upgradesPanel')">⚡ الترقيات <span id="menuBones" style="color:#f9c74f;margin-left:4px"></span></button>
+        <button class="btn btn-secondary" onclick="showPanel('skinsPanel')">🎨 المظاهر</button>
+        <button class="btn btn-secondary" onclick="showPanel('leaderboardPanel')">🏆 المتصدرون</button>
+        <button class="btn btn-secondary" onclick="toggleMusic()">🎵 <span id="musicBtnText">الموسيقى: شغّالة</span></button>
       </div>
-      <div class="text-muted" style="margin-top:8px">v1.0 · Built with 🦴 and chaos</div>
+      <div class="text-muted" style="margin-top:8px">v2.0 · مصنوع بـ🦴 وفوضى تونسية</div>
     </div>
   </div>
 
   <!-- ── HUD ── -->
   <div id="hud" class="hidden">
     <div class="hud-score">🦴 <span id="bonesHud">0</span></div>
-    <div class="hud-score">SCORE <span id="scoreHud">0</span></div>
-    <div class="hud-score">BEST <span id="bestHud">0</span></div>
+    <div class="hud-score">نقاط <span id="scoreHud">0</span></div>
+    <div class="hud-score">أفضل <span id="bestHud">0</span></div>
   </div>
+
+  <!-- ── WEATHER BADGE ── -->
+  <div id="weatherBadge"></div>
 
   <!-- ── ONLINE SCOREBOARD ── -->
   <div id="onlineBoard" class="hidden">
-    <div class="ob-title">🌐 Online</div>
+    <div class="ob-title">🌐 أونلاين</div>
     <div id="obRows"></div>
   </div>
 
@@ -354,6 +376,9 @@
 
   <!-- ── POWERUP BAR ── -->
   <div id="powerupBar"></div>
+
+  <!-- ── SOUNDPAD ── -->
+  <div id="soundpad"></div>
 
   <!-- ── TOUCH CONTROLS ── -->
   <div id="touchControls">
@@ -367,29 +392,29 @@
   <div class="screen hidden" id="gameoverScreen">
     <div class="gameover-box">
       <div class="gameover-dino" id="gameoverEmoji">💀</div>
-      <div class="gameover-title">GAME OVER</div>
+      <div class="gameover-title">انتهت اللعبة</div>
       <div class="funny-msg" id="funnyMsg"></div>
       <div class="gameover-scores">
         <div class="score-card">
-          <div class="score-label">Score</div>
+          <div class="score-label">النقاط</div>
           <div class="score-value" id="goScore">0</div>
         </div>
         <div class="score-card">
-          <div class="score-label">Best</div>
+          <div class="score-label">الأفضل</div>
           <div class="score-value" id="goBest">0</div>
         </div>
         <div class="score-card">
-          <div class="score-label">Bones</div>
+          <div class="score-label">العظام</div>
           <div class="score-value" id="goBones">0</div>
         </div>
         <div class="score-card">
-          <div class="score-label">Distance</div>
-          <div class="score-value" id="goDist">0m</div>
+          <div class="score-label">المسافة</div>
+          <div class="score-value" id="goDist">0م</div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-primary" onclick="restartGame()">🔄 Play Again</button>
-        <button class="btn btn-secondary" onclick="goMenu()">🏠 Menu</button>
+        <button class="btn btn-primary" onclick="restartGame()">🔄 العب مرة ثانية</button>
+        <button class="btn btn-secondary" onclick="goMenu()">🏠 القائمة</button>
       </div>
     </div>
   </div>
@@ -399,39 +424,38 @@
   <!-- ONLINE PANEL -->
   <div class="panel hidden" id="onlinePanel">
     <div class="panel-box">
-      <div class="panel-title">🌐 Online Multiplayer</div>
+      <div class="panel-title">🌐 العب أونلاين</div>
       <button class="panel-close" onclick="hidePanel('onlinePanel')">✕</button>
       <div id="onlinePanelContent">
         <div class="flex-col">
-          <input class="room-input" id="playerNameInput" placeholder="Your name (e.g. DinoKing99)" maxlength="16">
+          <input class="room-input" id="playerNameInput" placeholder="اسمك (مثلاً: DinoKing99)" maxlength="16" dir="auto">
           <div class="flex-row">
-            <button class="btn btn-success" style="flex:1" onclick="createRoom()">➕ Create Room</button>
+            <button class="btn btn-success" style="flex:1" onclick="createRoom()">➕ أنشئ غرفة</button>
           </div>
           <hr class="fancy">
-          <input class="room-input" id="joinCodeInput" placeholder="Room Code (e.g. DINO42)" maxlength="8" style="text-transform:uppercase;letter-spacing:4px">
-          <button class="btn btn-online" onclick="joinRoom()">🚀 Join Room</button>
+          <input class="room-input" id="joinCodeInput" placeholder="كود الغرفة (مثل: DINO42)" maxlength="8" style="text-transform:uppercase;letter-spacing:4px" dir="ltr">
+          <button class="btn btn-online" onclick="joinRoom()">🚀 انضم لغرفة</button>
         </div>
         <div id="roomStatus" style="margin-top:10px"></div>
       </div>
-      <!-- Room lobby (shown after create/join) -->
       <div id="roomLobby" class="hidden">
         <div class="room-code-display">
-          <div style="color:#9ca3af;font-size:.75rem;letter-spacing:2px;margin-bottom:4px">ROOM CODE</div>
+          <div style="color:#9ca3af;font-size:.75rem;letter-spacing:2px;margin-bottom:4px">كود الغرفة</div>
           <div class="room-code" id="roomCodeDisplay">----</div>
-          <button class="btn btn-sm btn-secondary" style="margin-top:8px" onclick="copyRoomCode()">📋 Copy Code</button>
+          <button class="btn btn-sm btn-secondary" style="margin-top:8px" onclick="copyRoomCode()">📋 انسخ الكود</button>
         </div>
-        <div style="color:#9ca3af;font-size:.8rem;margin:8px 0 4px">Players in room:</div>
+        <div style="color:#9ca3af;font-size:.8rem;margin:8px 0 4px">اللاعبون في الغرفة:</div>
         <div class="room-players" id="roomPlayersList"></div>
         <div id="lobbyActions" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
           <div id="hostActions" class="hidden">
             <button class="btn btn-primary" id="startOnlineBtn" onclick="startOnlineGame()" style="width:100%" disabled>
-              ⏳ Waiting for players...
+              ⏳ نستنى لاعبين...
             </button>
           </div>
           <div id="guestWaiting" class="hidden">
-            <div class="text-muted text-center">Waiting for host to start...</div>
+            <div class="text-muted text-center">استنى للهوست يبدأ...</div>
           </div>
-          <button class="btn btn-danger" onclick="leaveRoom()">🚪 Leave Room</button>
+          <button class="btn btn-danger" onclick="leaveRoom()">🚪 اخرج من الغرفة</button>
         </div>
       </div>
     </div>
@@ -440,9 +464,9 @@
   <!-- UPGRADES PANEL -->
   <div class="panel hidden" id="upgradesPanel">
     <div class="panel-box">
-      <div class="panel-title">⚡ Upgrades</div>
+      <div class="panel-title">⚡ الترقيات</div>
       <button class="panel-close" onclick="hidePanel('upgradesPanel')">✕</button>
-      <div class="bones-count">🦴 <span id="bonesDisplay">0</span> bones available</div>
+      <div class="bones-count">🦴 <span id="bonesDisplay">0</span> عظمة متاحة</div>
       <div class="upgrade-grid" id="upgradeGrid"></div>
     </div>
   </div>
@@ -450,7 +474,7 @@
   <!-- SKINS PANEL -->
   <div class="panel hidden" id="skinsPanel">
     <div class="panel-box">
-      <div class="panel-title">🎨 Skins</div>
+      <div class="panel-title">🎨 المظاهر</div>
       <button class="panel-close" onclick="hidePanel('skinsPanel')">✕</button>
       <div class="skins-grid" id="skinsGrid"></div>
     </div>
@@ -459,7 +483,7 @@
   <!-- LEADERBOARD PANEL -->
   <div class="panel hidden" id="leaderboardPanel">
     <div class="panel-box">
-      <div class="panel-title">🏆 Leaderboard</div>
+      <div class="panel-title">🏆 المتصدرون</div>
       <button class="panel-close" onclick="hidePanel('leaderboardPanel')">✕</button>
       <div id="leaderboardList"></div>
     </div>
@@ -475,6 +499,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, get, update, onValue, off, remove, push, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// إعدادات Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBaNjHmi-VlW8aFDDVN38OJkQCShYY2sFg",
   authDomain: "dominos-ftw.firebaseapp.com",
@@ -499,7 +524,7 @@ window._fbRemove = remove;
 window._fbPush = push;
 window._fbServerTimestamp = serverTimestamp;
 window._fbReady = true;
-console.log("Firebase ready ✅");
+console.log("Firebase جاهز ✅");
 </script>
 
 <!-- ══════════ GAME SCRIPT ══════════ -->
