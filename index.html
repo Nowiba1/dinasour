@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dino Runner+ - Landing</title>
+    <title>Dino Runner+ - Ultimate Edition</title>
     <style>
         :root {
             --bg-primary: #0f0c29;
@@ -48,7 +48,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Animated Background Particles */
         .bg-particles {
             position: fixed;
             top: 0;
@@ -67,76 +66,42 @@
         }
 
         @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) scale(1.5);
-                opacity: 0;
-            }
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
         }
 
         @keyframes pulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         @keyframes slideInFromBottom {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         @keyframes slideInFromLeft {
-            from {
-                transform: translateX(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes slideInFromRight {
-            from {
-                transform: translateX(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes glowPulse {
-            0%,
-            100% {
-                box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(255, 215, 0, 0.3);
-            }
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(255, 215, 0, 0.3); }
         }
 
-        /* Main Container */
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
         .main-container {
             position: relative;
             z-index: 1;
@@ -146,19 +111,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 40px;
+            gap: 30px;
         }
 
-        /* Header Section */
         .header {
             text-align: center;
             animation: slideInFromBottom 0.8s ease-out;
-        }
-
-        .logo-container {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 10px;
         }
 
         .logo-icon {
@@ -170,7 +128,7 @@
 
         .game-title {
             font-family: var(--font-heading);
-            font-size: clamp(36px, 6vw, 56px);
+            font-size: clamp(32px, 6vw, 52px);
             font-weight: 900;
             background: linear-gradient(135deg, var(--accent-gold), var(--accent-red), var(--accent-gold));
             background-size: 200% 200%;
@@ -178,22 +136,11 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: gradientShift 3s ease-in-out infinite;
-            text-shadow: none;
             letter-spacing: -1px;
         }
 
-        @keyframes gradientShift {
-            0%,
-            100% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-        }
-
         .game-subtitle {
-            font-size: clamp(14px, 2vw, 18px);
+            font-size: clamp(12px, 2vw, 16px);
             color: var(--text-secondary);
             font-weight: 400;
             letter-spacing: 2px;
@@ -201,29 +148,36 @@
             margin-top: 8px;
         }
 
-        /* Feature Cards */
-        .features-grid {
+        /* Menu Grid */
+        .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 900px;
         }
 
-        .feature-card {
+        .menu-item {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 20px;
-            padding: 30px 20px;
+            padding: 25px 20px;
             text-align: center;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             transition: var(--transition-smooth);
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
-        .feature-card::before {
+        .menu-item::before {
             content: '';
             position: absolute;
             top: 0;
@@ -234,102 +188,201 @@
             transition: left 0.5s ease;
         }
 
-        .feature-card:hover::before {
+        .menu-item:hover::before {
             left: 100%;
         }
 
-        .feature-card:hover {
-            transform: translateY(-8px);
+        .menu-item:hover {
+            transform: translateY(-5px);
             border-color: var(--accent-gold);
             box-shadow: 0 15px 40px rgba(255, 215, 0, 0.15);
         }
 
-        .feature-card:nth-child(1) {
-            animation: slideInFromLeft 0.8s ease-out;
-        }
-        .feature-card:nth-child(2) {
-            animation: slideInFromBottom 0.8s ease-out 0.2s backwards;
-        }
-        .feature-card:nth-child(3) {
-            animation: slideInFromRight 0.8s ease-out 0.4s backwards;
-        }
-
-        .feature-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .feature-title {
-            color: var(--text-primary);
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .feature-desc {
-            color: var(--text-secondary);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        /* CTA Button */
-        .play-button-container {
-            animation: slideInFromBottom 0.8s ease-out 0.6s backwards;
-        }
-
-        .play-button {
-            display: inline-block;
-            padding: 20px 60px;
-            font-family: var(--font-heading);
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            text-decoration: none;
-            background: var(--button-gradient);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            transition: var(--transition-bounce);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-glow);
-            animation: glowPulse 2s ease-in-out infinite;
-        }
-
-        .play-button:hover {
-            transform: scale(1.08) translateY(-3px);
-            background: var(--button-hover);
-            box-shadow: 0 0 60px rgba(255, 107, 107, 0.5), 0 0 80px rgba(255, 215, 0, 0.2);
-        }
-
-        .play-button:active {
+        .menu-item:active {
             transform: scale(0.95);
             transition: all 0.1s ease;
         }
 
-        .play-button::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .menu-item:nth-child(1) { animation: slideInFromLeft 0.8s ease-out; }
+        .menu-item:nth-child(2) { animation: slideInFromBottom 0.8s ease-out 0.15s backwards; }
+        .menu-item:nth-child(3) { animation: slideInFromRight 0.8s ease-out 0.3s backwards; }
+        .menu-item:nth-child(4) { animation: slideInFromLeft 0.8s ease-out 0.45s backwards; }
+        .menu-item:nth-child(5) { animation: slideInFromBottom 0.8s ease-out 0.6s backwards; }
+        .menu-item:nth-child(6) { animation: slideInFromRight 0.8s ease-out 0.75s backwards; }
+
+        .menu-icon {
+            font-size: 48px;
+            display: block;
         }
 
-        .play-button:hover::after {
-            opacity: 1;
+        .menu-label {
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        /* Stats Bar */
+        .menu-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .menu-highlight {
+            border-color: var(--accent-gold);
+            box-shadow: var(--shadow-glow);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        .menu-highlight .menu-label {
+            color: var(--accent-gold);
+        }
+
+        /* Room code input */
+        .room-input-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .room-input-container.active {
+            display: flex;
+        }
+
+        .room-input-box {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            animation: slideInFromBottom 0.3s ease;
+        }
+
+        .room-input-box h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .room-input-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid var(--glass-border);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            outline: none;
+            transition: var(--transition-smooth);
+            margin-bottom: 15px;
+        }
+
+        .room-input-box input:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .room-input-box button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 5px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-join {
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            color: #fff;
+        }
+
+        .btn-join:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+            max-width: 400px;
+            width: 90%;
+            animation: slideInFromBottom 0.3s ease;
+        }
+
+        .modal-box h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-box button {
+            background: linear-gradient(135deg, var(--accent-red), #ff8e53);
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        .modal-box button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Stats */
         .stats-bar {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
             animation: slideInFromBottom 0.8s ease-out 0.8s backwards;
@@ -339,7 +392,7 @@
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            padding: 15px 25px;
+            padding: 12px 22px;
             text-align: center;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -353,137 +406,132 @@
 
         .stat-value {
             color: var(--accent-gold);
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
         }
 
         .stat-label {
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* Footer */
         .footer-text {
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             animation: slideInFromBottom 0.8s ease-out 1s backwards;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .main-container {
-                gap: 25px;
-                padding: 15px;
-            }
-
-            .logo-icon {
-                font-size: 60px;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .play-button {
-                padding: 16px 40px;
-                font-size: 18px;
-            }
-
-            .stats-bar {
-                gap: 15px;
-            }
-
-            .stat-item {
-                padding: 12px 20px;
-            }
+            .main-container { gap: 20px; padding: 15px; }
+            .logo-icon { font-size: 60px; }
+            .menu-grid { grid-template-columns: 1fr; gap: 10px; }
+            .menu-item { padding: 18px 15px; }
+            .stats-bar { gap: 10px; }
+            .stat-item { padding: 10px 18px; }
         }
 
         @media (max-width: 480px) {
-            .game-title {
-                font-size: 28px;
-            }
-
-            .logo-icon {
-                font-size: 45px;
-            }
-
-            .feature-card {
-                padding: 20px 15px;
-            }
+            .game-title { font-size: 28px; }
+            .logo-icon { font-size: 45px; }
         }
     </style>
 </head>
 <body>
-    <!-- Animated Background Particles -->
     <div class="bg-particles" id="particles"></div>
 
-    <!-- Main Content -->
     <div class="main-container">
-        <!-- Header -->
         <div class="header">
-            <div class="logo-container">
-                <span class="logo-icon">🦖</span>
-            </div>
+            <span class="logo-icon">🦖</span>
             <h1 class="game-title">DINO RUNNER+</h1>
-            <p class="game-subtitle">Enhanced Edition • Run, Jump, Survive</p>
+            <p class="game-subtitle">Ultimate Edition • Run, Fly, Survive</p>
         </div>
 
-        <!-- Feature Cards -->
-        <div class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">⚡</span>
-                <h3 class="feature-title">Powerups & Upgrades</h3>
-                <p class="feature-desc">Collect jetpacks, shields, magnets and more. Upgrade your abilities with bones collected during runs.</p>
+        <div class="menu-grid">
+            <div class="menu-item menu-highlight" onclick="startGame('single')">
+                <span class="menu-icon">▶️</span>
+                <span class="menu-label">PLAY SOLO</span>
+                <span class="menu-desc">Start a single player game with jetpack powerups and parachute respawn</span>
             </div>
-            <div class="feature-card">
-                <span class="feature-icon">🆚</span>
-                <h3 class="feature-title">Race 3 AI Rivals</h3>
-                <p class="feature-desc">Compete against three unique AI dinosaurs, each with their own personality and playstyle.</p>
+
+            <div class="menu-item" onclick="createRoom()">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-label">CREATE ROOM</span>
+                <span class="menu-desc">Host an online game and share the room code with friends</span>
             </div>
-            <div class="feature-card">
-                <span class="feature-icon">🌐</span>
-                <h3 class="feature-title">Online Multiplayer</h3>
-                <p class="feature-desc">Create rooms or join public games. Challenge friends and players worldwide in real-time.</p>
+
+            <div class="menu-item" onclick="showJoinRoom()">
+                <span class="menu-icon">🔗</span>
+                <span class="menu-label">JOIN ROOM</span>
+                <span class="menu-desc">Enter a room code to join your friend's game</span>
+            </div>
+
+            <div class="menu-item" onclick="openUpgrades()">
+                <span class="menu-icon">⬆️</span>
+                <span class="menu-label">UPGRADES</span>
+                <span class="menu-desc">Spend coins to upgrade speed, jump, and abilities</span>
+            </div>
+
+            <div class="menu-item" onclick="openCharacters()">
+                <span class="menu-icon">🎭</span>
+                <span class="menu-label">CHARACTERS</span>
+                <span class="menu-desc">Unlock and choose from 8 funny animal characters</span>
+            </div>
+
+            <div class="menu-item" onclick="openLeaderboard()">
+                <span class="menu-icon">🏆</span>
+                <span class="menu-label">LEADERBOARD</span>
+                <span class="menu-desc">View top scores from players around the world</span>
             </div>
         </div>
 
-        <!-- Play Button -->
-        <div class="play-button-container">
-            <a href="game.html" class="play-button">
-                ▶ PLAY NOW
-            </a>
-        </div>
-
-        <!-- Stats -->
         <div class="stats-bar">
             <div class="stat-item">
                 <div class="stat-value" id="highScore">0</div>
                 <div class="stat-label">High Score</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="bonesCollected">0</div>
-                <div class="stat-label">Bones</div>
+                <div class="stat-value" id="coins">0</div>
+                <div class="stat-label">Coins</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="skinsUnlocked">1</div>
-                <div class="stat-label">Skins</div>
+                <div class="stat-value" id="charsUnlocked">1</div>
+                <div class="stat-label">Characters</div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <p class="footer-text">Press SPACE to jump • Double-jump in air • Mobile touch supported</p>
+        <p class="footer-text">Press SPACE or Tap to Jump • Collect 🚀 Jetpacks to Fly • Die & Respawn with Parachute</p>
+    </div>
+
+    <!-- Room Code Input -->
+    <div class="room-input-container" id="roomInput">
+        <div class="room-input-box">
+            <h3>🔗 Enter Room Code</h3>
+            <input type="text" id="roomCode" placeholder="ABC123" maxlength="6" autocomplete="off">
+            <br>
+            <button class="btn-join" onclick="joinRoom()">Join Room</button>
+            <button class="btn-cancel" onclick="hideJoinRoom()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <h3 id="modal-title">Notice</h3>
+            <p id="modal-message"></p>
+            <button onclick="closeModal()">OK</button>
+        </div>
     </div>
 
     <script>
-        // ─────────────── Background Particles ───────────────
+        // ═══════════════════════════════════════════
+        // BACKGROUND PARTICLES
+        // ═══════════════════════════════════════════
         (function createParticles() {
             const container = document.getElementById('particles');
             const colors = ['#ffd700', '#ff6b6b', '#4fc3f7', '#ff8e53', '#4caf50', '#ce93d8'];
-
             for (let i = 0; i < 30; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
@@ -497,22 +545,119 @@
             }
         })();
 
-        // ─────────────── Load Stats ───────────────
-        (function loadStats() {
+        // ═══════════════════════════════════════════
+        // LOAD STATS
+        // ═══════════════════════════════════════════
+        function loadStats() {
             try {
-                const saved = JSON.parse(localStorage.getItem('dinoRunnerEnhanced') || '{}');
+                const saved = JSON.parse(localStorage.getItem('dinoRunnerUltimate') || '{}');
                 document.getElementById('highScore').textContent = saved.highScore || 0;
-                document.getElementById('bonesCollected').textContent = saved.bones || 0;
-                const skins = saved.skinUnlocks || { classic: true };
-                document.getElementById('skinsUnlocked').textContent = Object.keys(skins).length;
+                document.getElementById('coins').textContent = saved.coins || 0;
+                const chars = saved.charUnlocks || { dino: true, cat: true, dog: true, penguin: true };
+                document.getElementById('charsUnlocked').textContent = Object.keys(chars).length;
             } catch (e) {
                 document.getElementById('highScore').textContent = '0';
-                document.getElementById('bonesCollected').textContent = '0';
-                document.getElementById('skinsUnlocked').textContent = '1';
+                document.getElementById('coins').textContent = '0';
+                document.getElementById('charsUnlocked').textContent = '4';
             }
-        })();
+        }
+        loadStats();
 
-        // ─────────────── Audio Context Warmup ───────────────
+        // ═══════════════════════════════════════════
+        // GAME LAUNCH
+        // ═══════════════════════════════════════════
+        function startGame(mode) {
+            localStorage.setItem('dinoGameMode', mode);
+            window.location.href = 'game.html';
+        }
+
+        // ═══════════════════════════════════════════
+        // ROOM SYSTEM
+        // ═══════════════════════════════════════════
+        function createRoom() {
+            // Generate random room code
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            // Store room info
+            localStorage.setItem('dinoRoomCode', code);
+            localStorage.setItem('dinoRoomHost', 'true');
+            localStorage.setItem('dinoGameMode', 'online');
+            
+            // Show the code to user
+            showModal('Room Created! 🏠', 
+                `Your room code is: <b style="font-size:24px;letter-spacing:4px;">${code}</b><br><br>
+                Share this code with friends to join.<br>
+                Starting game now...`);
+            
+            // Navigate to game after short delay
+            setTimeout(() => {
+                window.location.href = 'game.html';
+            }, 2000);
+        }
+
+        function showJoinRoom() {
+            document.getElementById('roomInput').classList.add('active');
+            document.getElementById('roomCode').focus();
+        }
+
+        function hideJoinRoom() {
+            document.getElementById('roomInput').classList.remove('active');
+        }
+
+        function joinRoom() {
+            const code = document.getElementById('roomCode').value.trim().toUpperCase();
+            if (code.length < 3) {
+                showModal('Invalid Code', 'Please enter a valid room code (at least 3 characters).');
+                return;
+            }
+            
+            localStorage.setItem('dinoRoomCode', code);
+            localStorage.setItem('dinoRoomHost', 'false');
+            localStorage.setItem('dinoGameMode', 'online');
+            
+            hideJoinRoom();
+            window.location.href = 'game.html';
+        }
+
+        // Enter key to join
+        document.getElementById('roomCode')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinRoom();
+        });
+
+        // ═══════════════════════════════════════════
+        // MODAL
+        // ═══════════════════════════════════════════
+        function showModal(title, message) {
+            document.getElementById('modal-title').innerHTML = title;
+            document.getElementById('modal-message').innerHTML = message;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // ═══════════════════════════════════════════
+        // MENU PAGES (Placeholder - will load in game.html)
+        // ═══════════════════════════════════════════
+        function openUpgrades() {
+            localStorage.setItem('dinoMenuPage', 'upgrades');
+            window.location.href = 'game.html';
+        }
+
+        function openCharacters() {
+            localStorage.setItem('dinoMenuPage', 'characters');
+            window.location.href = 'game.html';
+        }
+
+        function openLeaderboard() {
+            localStorage.setItem('dinoMenuPage', 'leaderboard');
+            window.location.href = 'game.html';
+        }
+
+        // ═══════════════════════════════════════════
+        // AUDIO WARMUP
+        // ═══════════════════════════════════════════
         document.addEventListener('click', function warmupAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -525,9 +670,7 @@
                 osc.start(0);
                 osc.stop(0.001);
                 tempCtx.close();
-            } catch (e) {
-                console.log('Audio warmup:', e.message);
-            }
+            } catch (e) {}
         }, { once: true });
     </script>
 </body>
